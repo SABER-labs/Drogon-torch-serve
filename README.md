@@ -41,9 +41,10 @@ Transfer/sec:    191.38KB
 ```
 
 ## Dependencies
-* libtorch
-* libopencv
-* Drogon
+* [Libtorch](https://pytorch.org/get-started/locally/)
+* [Torch Vision Library](https://github.com/pytorch/vision#using-the-models-on-c)
+* Libopencv-dev `sudo apt-get install -y libopencv-dev`
+* [Install Drogon](https://github.com/drogonframework/drogon/wiki/ENG-02-Installation)
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready
