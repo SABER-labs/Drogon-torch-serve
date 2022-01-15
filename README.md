@@ -16,7 +16,7 @@ curl "localhost:8088/classify" -F "image=@images/cat.jpg"
 ## Benchmarking Instructions
 ```bash
 curl "localhost:8088/classify" -F "image=@images/cat.jpg" # Run once to warmup.
-wrk -t8 -c100 -d10 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
+wrk -t8 -c100 -d60 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
 ```
 
 ## Benchmarking results
@@ -25,19 +25,19 @@ wrk -t8 -c100 -d10 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 # Kernel: 5.15.14-xanmod1
 # CPU: AMD Ryzen 9 5900X (24) @ 3.700GHz
 # GPU: NVIDIA GeForce RTX 3070
-Running 10s test @ http://localhost:8088/classify
+Running 1m test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   133.73ms   55.97ms 293.76ms   60.80%
-    Req/Sec    89.21     22.13   202.00     73.63%
+    Latency   135.02ms   49.17ms 318.43ms   77.11%
+    Req/Sec    89.00     18.08   222.00     58.70%
   Latency Distribution
-     50%  116.53ms
-     75%  190.91ms
-     90%  205.15ms
-     99%  259.52ms
-  7159 requests in 10.09s, 1.88MB read
-Requests/sec:    709.62
-Transfer/sec:    191.27KB
+     50%  119.04ms
+     75%  172.18ms
+     90%  197.88ms
+     99%  264.88ms
+  42635 requests in 1.00m, 11.22MB read
+Requests/sec:    710.03
+Transfer/sec:    191.38KB
 ```
 
 ## Dependencies
