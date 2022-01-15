@@ -26,17 +26,18 @@ void ImageClass::classify(const HttpRequestPtr &req,
         cv::Mat image_transformed;
         cv::resize(image, image_transformed, cv::Size(224, 224));
         cv::cvtColor(image_transformed, image_transformed, cv::COLOR_BGR2RGB);
-        torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte);
-        tensor_image = tensor_image.to(torch::kCUDA);
-        tensor_image = tensor_image.permute({2, 0, 1});
-        tensor_image = tensor_image.toType(torch::kFloat);
-        tensor_image = tensor_image.div(255);
-        tensor_image = tensor_image.unsqueeze(0);
-        inputs.emplace_back(torch::autograd::make_variable(tensor_image, false));
+        torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
+                .to(torch::kCUDA)
+                .permute({2, 0, 1})
+                .toType(torch::kFloat)
+                .div(255)
+                .unsqueeze(0);
+        inputs.emplace_back(tensor_image);
         auto output = model.forward(inputs).toTensor();
         auto values = output.argmax(1);
         auto confidence = torch::softmax(output, 1).max().item<float>();
         response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", class_idx_to_names[std::to_string(values.cpu().item<int>())], confidence, 3);
+//        c10::cuda::CUDACachingAllocator::emptyCache(); # Use if you have any memory leaks, currently dont see any.
     }
     json["status"] = "success";
     json["message"] = response_string;
