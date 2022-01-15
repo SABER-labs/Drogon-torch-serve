@@ -4,20 +4,22 @@ void ImageClass::classify(const HttpRequestPtr &req,
                       std::function<void (const HttpResponsePtr &)> &&callback)
 {
     MultiPartParser fileUpload;
+    Json::Value json;
     if (fileUpload.parse(req) != 0 || fileUpload.getFiles().size() != 1)
     {
-        auto resp = HttpResponse::newHttpResponse();
-        resp->setBody("Function called with any files.");
+        json["status"] = "failed";
+        json["message"] = "Upload valid file for inference.";
+        auto resp = HttpResponse::newHttpJsonResponse(json);
         resp->setStatusCode(k403Forbidden);
         callback(resp);
         return;
     }
 
     auto &file = fileUpload.getFiles()[0];
-    auto nograd = torch::NoGradGuard();
-    LOG_INFO << "Classify function was called.";
+    LOG_DEBUG << "Classify function was called.";
     auto response_string = std::string("");
     if (torch::cuda::is_available()) {
+        torch::NoGradGuard();
         std::vector<torch::jit::IValue> inputs;
         std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
         auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
@@ -30,14 +32,15 @@ void ImageClass::classify(const HttpRequestPtr &req,
         tensor_image = tensor_image.toType(torch::kFloat);
         tensor_image = tensor_image.div(255);
         tensor_image = tensor_image.unsqueeze(0);
-        inputs.push_back(torch::autograd::make_variable(tensor_image, false));
+        inputs.emplace_back(torch::autograd::make_variable(tensor_image, false));
         auto output = model.forward(inputs).toTensor();
         auto values = output.argmax(1);
         auto confidence = torch::softmax(output, 1).max().item<float>();
         response_string = fmt::format("Class found for image was {} with confidence {}.", class_idx_to_names[std::to_string(values.cpu().item<int>())], confidence);
     }
-    auto resp = HttpResponse::newHttpResponse();
-    resp->setBody(response_string);
+    json["status"] = "success";
+    json["message"] = response_string;
+    auto resp = HttpResponse::newHttpJsonResponse(json);
     callback(resp);
 }
 
@@ -50,7 +53,7 @@ ImageClass::ImageClass()
     torch::NoGradGuard();
     model.eval();
     if (torch::cuda::is_available()) {
-        LOG_INFO << "Model loaded onto cuda.";
         model.to(torch::kCUDA);
+        LOG_INFO << "Model loaded onto cuda.";
     }
 }
