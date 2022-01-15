@@ -8,6 +8,11 @@
     ./rest_server
 ```
 
+## Client Instructions
+```bash
+    curl localhost:8088/classify
+```
+
 ## Dependencies
 * libtorch
 * libopencv
