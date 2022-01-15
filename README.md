@@ -15,7 +15,7 @@ curl "localhost:8088/classify" -F "image=@images/cat.jpg"
 
 ## Benchmarking Instructions
 ```bash
-wrk2 -t8 -c100 -d10 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
+wrk -t8 -c100 -d10 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
 ```
 
 ## Benchmarking results
