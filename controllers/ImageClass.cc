@@ -3,12 +3,24 @@
 void ImageClass::classify(const HttpRequestPtr &req,
                       std::function<void (const HttpResponsePtr &)> &&callback)
 {
+    MultiPartParser fileUpload;
+    if (fileUpload.parse(req) != 0 || fileUpload.getFiles().size() != 1)
+    {
+        auto resp = HttpResponse::newHttpResponse();
+        resp->setBody("Function called with any files.");
+        resp->setStatusCode(k403Forbidden);
+        callback(resp);
+        return;
+    }
+
+    auto &file = fileUpload.getFiles()[0];
     auto nograd = torch::NoGradGuard();
     LOG_INFO << "Classify function was called.";
     auto response_string = std::string("");
     if (torch::cuda::is_available()) {
         std::vector<torch::jit::IValue> inputs;
-        auto image = cv::imread("../model_resources/cat.jpg", cv::ImreadModes::IMREAD_COLOR);
+        std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
+        auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
         cv::Mat image_transformed;
         cv::resize(image, image_transformed, cv::Size(224, 224));
         cv::cvtColor(image_transformed, image_transformed, cv::COLOR_BGR2RGB);
