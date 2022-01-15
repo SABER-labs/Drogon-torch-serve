@@ -43,3 +43,7 @@ Transfer/sec:    137.55KB
 * libtorch
 * libopencv
 * Drogon
+
+## Notes
+* WIP: Just gets the job done for now, not production ready
+* Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher
