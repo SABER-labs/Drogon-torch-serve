@@ -19,7 +19,7 @@ void ImageClass::classify(const HttpRequestPtr &req,
     LOG_DEBUG << "Classify function was called.";
     auto response_string = std::string("");
     if (torch::cuda::is_available()) {
-        torch::NoGradGuard();
+        torch::NoGradGuard no_grad;
         std::vector<torch::jit::IValue> inputs;
         std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
         auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
@@ -36,7 +36,7 @@ void ImageClass::classify(const HttpRequestPtr &req,
         auto output = model.forward(inputs).toTensor();
         auto values = output.argmax(1);
         auto confidence = torch::softmax(output, 1).max().item<float>();
-        response_string = fmt::format("Class found for image was {} with confidence {}.", class_idx_to_names[std::to_string(values.cpu().item<int>())], confidence);
+        response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", class_idx_to_names[std::to_string(values.cpu().item<int>())], confidence, 3);
     }
     json["status"] = "success";
     json["message"] = response_string;
@@ -50,8 +50,10 @@ ImageClass::ImageClass()
     model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced.pt"));
     std::ifstream i("../model_resources/class_names.json");
     i >> class_idx_to_names;
-    torch::NoGradGuard();
-    model.eval();
+    {
+        torch::NoGradGuard no_grad;
+        model.eval();
+    }
     if (torch::cuda::is_available()) {
         model.to(torch::kCUDA);
         LOG_INFO << "Model loaded onto cuda.";

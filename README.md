@@ -10,7 +10,7 @@
 
 ## Client Instructions
 ```bash
-    curl "localhost:8088/classify" -F "image=@model_resources/cat.jpg"
+    curl "localhost:8088/classify" -F "image=@images/cat.jpg"
 ```
 
 ## Dependencies
