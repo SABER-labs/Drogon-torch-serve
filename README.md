@@ -28,16 +28,16 @@ wrk -t8 -c100 -d20 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 Running 20s test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    63.92ms   31.09ms 150.93ms   71.47%
-    Req/Sec   188.43     27.10   260.00     65.65%
+    Latency    63.07ms   20.25ms 119.39ms   64.76%
+    Req/Sec   190.71     23.24   260.00     71.45%
   Latency Distribution
-     50%   55.00ms
-     75%   74.07ms
-     90%  121.52ms
-     99%  135.23ms
-  30118 requests in 20.08s, 7.93MB read
-Requests/sec:   1499.64
-Transfer/sec:    404.20KB
+     50%   60.08ms
+     75%   80.29ms
+     90%   92.62ms
+     99%  106.32ms
+  30486 requests in 20.09s, 8.02MB read
+Requests/sec:   1517.81
+Transfer/sec:    409.10KB
 ```
 
 ## Dependencies
