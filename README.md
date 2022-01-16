@@ -46,6 +46,9 @@ Transfer/sec:    221.18KB
 * Libopencv-dev `sudo apt-get install -y libopencv-dev`
 * [Install Drogon](https://github.com/drogonframework/drogon/wiki/ENG-02-Installation)
 
+## TODO
+* ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
+* Use ThreadPool for batched inference.
+
 ## Notes
 * WIP: Just gets the job done for now, not production ready
-* ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
