@@ -25,19 +25,19 @@ wrk -t8 -c100 -d60 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 # Kernel: 5.15.14-xanmod1
 # CPU: AMD Ryzen 9 5900X (24) @ 3.700GHz
 # GPU: NVIDIA GeForce RTX 3070
-Running 1m test @ http://localhost:8088/classify
+Running 20s test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   135.02ms   49.17ms 318.43ms   77.11%
-    Req/Sec    89.00     18.08   222.00     58.70%
+    Latency   118.42ms   58.55ms 324.58ms   79.54%
+    Req/Sec   103.15     29.53   200.00     70.06%
   Latency Distribution
-     50%  119.04ms
-     75%  172.18ms
-     90%  197.88ms
-     99%  264.88ms
-  42635 requests in 1.00m, 11.22MB read
-Requests/sec:    710.03
-Transfer/sec:    191.38KB
+     50%  105.29ms
+     75%  146.38ms
+     90%  171.19ms
+     99%  275.26ms
+  16493 requests in 20.10s, 4.34MB read
+Requests/sec:    820.61
+Transfer/sec:    221.18KB
 ```
 
 ## Dependencies
@@ -48,4 +48,4 @@ Transfer/sec:    191.38KB
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready
-* Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher
+* ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
