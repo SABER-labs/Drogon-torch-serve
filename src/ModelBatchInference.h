@@ -24,9 +24,9 @@ struct ModelResponse {
     float confidence;
 };
 
-static const int MAX_WAIT_IN_MS = 8;
+static const int MAX_WAIT_IN_MS = 4;
 static const int MAX_BATCH_SIZE = 32;
-static const int POLL_INTERVAL_MS = 2;
+static const int POLL_INTERVAL_MS = 1;
 static constexpr int NUM_POOL_LOOPS = MAX_WAIT_IN_MS / POLL_INTERVAL_MS;
 
 class ModelBatchInference {

@@ -16,7 +16,7 @@ curl "localhost:8088/classify" -F "image=@images/cat.jpg"
 ## Benchmarking Instructions
 ```bash
 curl "localhost:8088/classify" -F "image=@images/cat.jpg" # Run once to warmup.
-wrk -t8 -c100 -d60 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
+wrk -t8 -c100 -d20 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
 ```
 
 ## Benchmarking results
@@ -28,16 +28,16 @@ wrk -t8 -c100 -d60 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 Running 20s test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   118.42ms   58.55ms 324.58ms   79.54%
-    Req/Sec   103.15     29.53   200.00     70.06%
+    Latency   101.09ms   45.60ms 248.44ms   59.99%
+    Req/Sec   118.91     23.87   212.00     70.97%
   Latency Distribution
-     50%  105.29ms
-     75%  146.38ms
-     90%  171.19ms
-     99%  275.26ms
-  16493 requests in 20.10s, 4.34MB read
-Requests/sec:    820.61
-Transfer/sec:    221.18KB
+     50%   97.08ms
+     75%  144.05ms
+     90%  162.88ms
+     99%  183.10ms
+  18998 requests in 20.09s, 5.00MB read
+Requests/sec:    945.60
+Transfer/sec:    254.87KB
 ```
 
 ## Dependencies
@@ -48,7 +48,7 @@ Transfer/sec:    221.18KB
 
 ## TODO
 * ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
-* Use ThreadPool for batched inference.
+* ~~Use ThreadPool for batched inference.~~
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready

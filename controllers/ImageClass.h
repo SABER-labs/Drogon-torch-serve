@@ -23,8 +23,9 @@ class ImageClass:public drogon::HttpController<ImageClass>
     // void get(const HttpRequestPtr& req,std::function<void (const HttpResponsePtr &)> &&callback,int p1,std::string p2);
     // void your_method_name(const HttpRequestPtr& req,std::function<void (const HttpResponsePtr &)> &&callback,double p1,int p2) const;
     ImageClass();
+    const static int NUM_INFERENCE_ENGINES = 3;
 private:
-    std::unique_ptr<ModelBatchInference> batch_inference;
+    std::vector<std::unique_ptr<ModelBatchInference>> batch_inference_engines;
 protected:
     void classify(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback);
 };

@@ -28,7 +28,8 @@ void ImageClass::classify(const HttpRequestPtr &req,
         cv::cvtColor(image_transformed, image_transformed, cv::COLOR_BGR2RGB);
         torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
                 .unsqueeze(0);
-        ModelResponse response = batch_inference->infer(uuid, tensor_image);
+        int randomIndex = rand() % batch_inference_engines.size();
+        ModelResponse response = batch_inference_engines[randomIndex]->infer(uuid, tensor_image);
         response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     }
     json["status"] = "success";
@@ -39,10 +40,13 @@ void ImageClass::classify(const HttpRequestPtr &req,
 
 ImageClass::ImageClass()
 {
-    batch_inference = std::make_unique<ModelBatchInference>();
+    srand(time(nullptr));
+    for (int i = 0; i < NUM_INFERENCE_ENGINES; ++i) {
+        batch_inference_engines.emplace_back(std::make_unique<ModelBatchInference>());
+        std::thread forever_infer([this, i]() {
+            batch_inference_engines[i]->foreverBatchInfer();
+        });
+        forever_infer.detach();
+    }
     // Load ModelBatchInference instead now
-    std::thread forever_infer([this]() {
-        batch_inference->foreverBatchInfer();
-    });
-    forever_infer.detach();
 }
