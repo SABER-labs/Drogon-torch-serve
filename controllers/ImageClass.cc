@@ -27,12 +27,9 @@ void ImageClass::classify(const HttpRequestPtr &req,
         cv::resize(image, image_transformed, cv::Size(224, 224));
         cv::cvtColor(image_transformed, image_transformed, cv::COLOR_BGR2RGB);
         torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
-                .permute({2, 0, 1})
-                .toType(torch::kFloat)
-                .div(255)
                 .unsqueeze(0);
-         ModelResponse response = batch_inference->infer(uuid, tensor_image);
-         response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
+        ModelResponse response = batch_inference->infer(uuid, tensor_image);
+        response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     }
     json["status"] = "success";
     json["message"] = response_string;

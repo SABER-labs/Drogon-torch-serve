@@ -45,7 +45,11 @@ void ModelBatchInference::foreverBatchInfer() {
                 request_queue.pop();
             }
 
-            auto batched_tensor = torch::cat(tensor_images, 0).to(torch::kCUDA);
+            auto batched_tensor = torch::cat(tensor_images, 0)
+                    .to(torch::kCUDA)
+                    .permute({0, 3, 1, 2})
+                    .toType(torch::kFloat)
+                    .div(255);
             inputs.emplace_back(batched_tensor);
             auto output = model.forward(inputs).toTensor();
             auto [confidences, values] = torch::softmax(output, 1).max(1);
