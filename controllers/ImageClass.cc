@@ -3,6 +3,7 @@
 void ImageClass::classify(const HttpRequestPtr &req,
                       std::function<void (const HttpResponsePtr &)> &&callback)
 {
+    std::string uuid = drogon::utils::getUuid();
     MultiPartParser fileUpload;
     Json::Value json;
     if (fileUpload.parse(req) != 0 || fileUpload.getFiles().size() != 1)
@@ -20,24 +21,16 @@ void ImageClass::classify(const HttpRequestPtr &req,
     auto response_string = std::string("");
     if (torch::cuda::is_available()) {
         torch::NoGradGuard no_grad;
-        std::vector<torch::jit::IValue> inputs;
         std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
         auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
         cv::Mat image_transformed;
         cv::resize(image, image_transformed, cv::Size(224, 224));
         cv::cvtColor(image_transformed, image_transformed, cv::COLOR_BGR2RGB);
         torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
-                .to(torch::kCUDA)
-                .permute({2, 0, 1})
-                .toType(torch::kFloat)
-                .div(255)
                 .unsqueeze(0);
-        inputs.emplace_back(tensor_image);
-        auto output = model.forward(inputs).toTensor();
-        auto values = output.argmax(1);
-        auto confidence = torch::softmax(output, 1).max().item<float>();
-        response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", class_idx_to_names[std::to_string(values.cpu().item<int>())], confidence, 3);
-//        c10::cuda::CUDACachingAllocator::emptyCache(); # Use if you have any memory leaks, currently dont see any.
+        int randomIndex = rand() % batch_inference_engines.size();
+        ModelResponse response = batch_inference_engines[randomIndex]->infer(uuid, tensor_image);
+        response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     }
     json["status"] = "success";
     json["message"] = response_string;
@@ -47,16 +40,13 @@ void ImageClass::classify(const HttpRequestPtr &req,
 
 ImageClass::ImageClass()
 {
-    LOG_INFO << "Model was created.";
-    model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced.pt"));
-    std::ifstream i("../model_resources/class_names.json");
-    i >> class_idx_to_names;
-    {
-        torch::NoGradGuard no_grad;
-        model.eval();
+    srand(time(nullptr));
+    for (int i = 0; i < NUM_INFERENCE_ENGINES; ++i) {
+        batch_inference_engines.emplace_back(std::make_unique<ModelBatchInference>());
+        std::thread forever_infer([this, i]() {
+            batch_inference_engines[i]->foreverBatchInfer();
+        });
+        forever_infer.detach();
     }
-    if (torch::cuda::is_available()) {
-        model.to(torch::kCUDA);
-        LOG_INFO << "Model loaded onto cuda.";
-    }
+    // Load ModelBatchInference instead now
 }

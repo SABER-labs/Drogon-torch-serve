@@ -2,13 +2,11 @@
 #include <fmt/core.h>
 #include <drogon/HttpController.h>
 #include <c10/cuda/CUDAGuard.h>
-#include <cuda_runtime_api.h>
 #include <filesystem>
 #include <opencv2/opencv.hpp>
-#include <torch/script.h>
 #include <torch/torch.h>
-#include <torchvision/models/resnet.h>
 #include "includes/json.hpp"
+#include "src/ModelBatchInference.h"
 using namespace drogon;
 class ImageClass:public drogon::HttpController<ImageClass>
 {
@@ -25,9 +23,9 @@ class ImageClass:public drogon::HttpController<ImageClass>
     // void get(const HttpRequestPtr& req,std::function<void (const HttpResponsePtr &)> &&callback,int p1,std::string p2);
     // void your_method_name(const HttpRequestPtr& req,std::function<void (const HttpResponsePtr &)> &&callback,double p1,int p2) const;
     ImageClass();
+    const static int NUM_INFERENCE_ENGINES = 3;
 private:
-    torch::jit::Module model;
-    nlohmann::json class_idx_to_names;
+    std::vector<std::unique_ptr<ModelBatchInference>> batch_inference_engines;
 protected:
     void classify(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback);
 };
