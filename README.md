@@ -28,16 +28,16 @@ wrk -t8 -c100 -d20 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 Running 20s test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   101.09ms   45.60ms 248.44ms   59.99%
-    Req/Sec   118.91     23.87   212.00     70.97%
+    Latency    76.64ms   30.79ms 196.25ms   69.80%
+    Req/Sec   156.88     25.29   232.00     65.84%
   Latency Distribution
-     50%   97.08ms
-     75%  144.05ms
-     90%  162.88ms
-     99%  183.10ms
-  18998 requests in 20.09s, 5.00MB read
-Requests/sec:    945.60
-Transfer/sec:    254.87KB
+     50%   76.08ms
+     75%   92.91ms
+     90%  113.82ms
+     99%  155.33ms
+  25086 requests in 20.09s, 6.60MB read
+Requests/sec:   1248.59
+Transfer/sec:    336.53KB
 ```
 
 ## Dependencies
@@ -49,6 +49,7 @@ Transfer/sec:    254.87KB
 ## TODO
 * ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
 * ~~Use ThreadPool for batched inference.~~
+* ~~FP16 Inference~~
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready

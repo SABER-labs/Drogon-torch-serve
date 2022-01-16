@@ -6,17 +6,22 @@
 
 ModelBatchInference::ModelBatchInference() {
     Timer measure("ModelBatchInference constructor");
-    model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced.pt"));
     std::ifstream i("../model_resources/class_names.json");
     i >> class_idx_to_names;
+    if (torch::cuda::is_available()) {
+        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cuda.pt"), torch::kCUDA);
+        model.to(torch::kFloat16);
+        LOG_INFO << "Model loaded onto CUDA";
+    } else {
+        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cpu.pt"), torch::kCPU);
+        LOG_INFO << "Model loaded onto CPU";
+    }
+
     {
-        torch::NoGradGuard no_grad;
+        torch::NoGradGuard no_grad_t;
         model.eval();
     }
-    if (torch::cuda::is_available()) {
-        model.to(torch::kCUDA);
-        LOG_INFO << "Model loaded onto CUDA";
-    }
+
 }
 
 void ModelBatchInference::foreverBatchInfer() {
@@ -30,7 +35,6 @@ void ModelBatchInference::foreverBatchInfer() {
         }
 
         if (!request_queue.empty()) {
-            // Timer measure("ModelBatchInference batch inference");
             torch::NoGradGuard no_grad;
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
             std::vector<torch::Tensor> tensor_images;
@@ -48,7 +52,7 @@ void ModelBatchInference::foreverBatchInfer() {
             auto batched_tensor = torch::cat(tensor_images, 0)
                     .to(torch::kCUDA)
                     .permute({0, 3, 1, 2})
-                    .toType(torch::kFloat)
+                    .toType(torch::kFloat16)
                     .div(255);
             inputs.emplace_back(batched_tensor);
             auto output = model.forward(inputs).toTensor();
