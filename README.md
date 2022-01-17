@@ -15,8 +15,8 @@ curl "localhost:8088/classify" -F "image=@images/cat.jpg"
 
 ## Benchmarking Instructions
 ```bash
-curl "localhost:8088/classify" -F "image=@images/cat.jpg" # Run once to warmup.
-wrk -t8 -c100 -d20 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
+for i in {0..8}; do curl "localhost:8088/classify" -F "image=@images/cat.jpg"; done # Run once to warmup.
+wrk -t8 -c100 -d60 -s benchmark/upload.lua "http://localhost:8088/classify" --latency
 ```
 
 ## Benchmarking results
@@ -25,19 +25,19 @@ wrk -t8 -c100 -d20 -s benchmark/upload.lua "http://localhost:8088/classify" --la
 # Kernel: 5.15.14-xanmod1
 # CPU: AMD Ryzen 9 5900X (24) @ 3.700GHz
 # GPU: NVIDIA GeForce RTX 3070
-Running 20s test @ http://localhost:8088/classify
+Running 1m test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    63.07ms   20.25ms 119.39ms   64.76%
-    Req/Sec   190.71     23.24   260.00     71.45%
+    Latency    62.94ms   23.30ms 128.98ms   59.62%
+    Req/Sec   191.28     19.48   252.00     63.29%
   Latency Distribution
-     50%   60.08ms
-     75%   80.29ms
-     90%   92.62ms
-     99%  106.32ms
-  30486 requests in 20.09s, 8.02MB read
-Requests/sec:   1517.81
-Transfer/sec:    409.10KB
+     50%   63.94ms
+     75%   73.42ms
+     90%  101.56ms
+     99%  115.37ms
+  91501 requests in 1.00m, 24.08MB read
+Requests/sec:   1524.01
+Transfer/sec:    410.77KB
 ```
 
 ## Dependencies
@@ -50,6 +50,7 @@ Transfer/sec:    409.10KB
 * ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
 * ~~Use ThreadPool for batched inference.~~
 * ~~FP16 Inference~~
+* Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html)
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready
