@@ -51,6 +51,8 @@ Transfer/sec:    410.77KB
 * ~~Use ThreadPool for batched inference.~~
 * ~~FP16 Inference~~
 * Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html)
+* Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
+* Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready
