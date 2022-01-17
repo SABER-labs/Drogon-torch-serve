@@ -1,5 +1,5 @@
 # C++ Torch Server
-### Serve torch models as rest-api using [Drogon](https://github.com/drogonframework/drogon), example included for resnet18 model for Imagenet. Benchmarks indicate around 20x performance improvement for resenet18.
+### Serve torch models as rest-api using [Drogon](https://github.com/drogonframework/drogon), example included for resnet18 model for Imagenet. Benchmarks indicate around 20x performance improvement for resenet18 at peak load.
 
 ## Build & Run Instructions
 ```bash
