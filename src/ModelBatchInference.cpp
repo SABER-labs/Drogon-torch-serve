@@ -35,7 +35,7 @@ void ModelBatchInference::foreverBatchInfer() {
         }
 
         if (!request_queue.empty()) {
-            torch::NoGradGuard no_grad;
+            c10::InferenceMode no_grad(true);
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
             std::vector<torch::Tensor> tensor_images;
             std::vector<std::string> request_ids;

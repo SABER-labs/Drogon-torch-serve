@@ -20,7 +20,7 @@ void ImageClass::classify(const HttpRequestPtr &req,
     LOG_DEBUG << "Classify function was called.";
     auto response_string = std::string("");
     if (torch::cuda::is_available()) {
-        torch::NoGradGuard no_grad;
+        c10::InferenceMode no_grad(true);
         std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
         auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
         cv::Mat image_transformed;
@@ -29,7 +29,7 @@ void ImageClass::classify(const HttpRequestPtr &req,
         torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
                 .unsqueeze(0);
         int randomIndex = rand() % batch_inference_engines.size();
-        ModelResponse response = batch_inference_engines[randomIndex]->infer(uuid, tensor_image);
+        auto response = batch_inference_engines[randomIndex]->infer(uuid, tensor_image);
         response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     }
     json["status"] = "success";
