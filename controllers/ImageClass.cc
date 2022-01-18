@@ -3,7 +3,6 @@
 void ImageClass::classify(const HttpRequestPtr &req,
                       std::function<void (const HttpResponsePtr &)> &&callback)
 {
-    std::string uuid = drogon::utils::getUuid();
     MultiPartParser fileUpload;
     Json::Value json;
     if (fileUpload.parse(req) != 0 || fileUpload.getFiles().size() != 1)
@@ -29,7 +28,7 @@ void ImageClass::classify(const HttpRequestPtr &req,
         torch::Tensor tensor_image = torch::from_blob(image_transformed.data, {image_transformed.rows, image_transformed.cols, 3}, torch::kByte)
                 .unsqueeze(0);
         int randomIndex = rand() % batch_inference_engines.size();
-        auto response = batch_inference_engines[randomIndex]->infer(uuid, tensor_image);
+        auto response = batch_inference_engines[randomIndex]->infer(tensor_image);
         response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     }
     json["status"] = "success";

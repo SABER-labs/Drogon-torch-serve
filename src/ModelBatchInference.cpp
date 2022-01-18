@@ -72,7 +72,7 @@ void ModelBatchInference::foreverBatchInfer() {
     }
 }
 
-ModelResponse ModelBatchInference::infer(const std::string &req_id, const torch::Tensor &image_tensor) {
+ModelResponse ModelBatchInference::infer(const torch::Tensor &image_tensor) {
     // Add the image tensor to request queue
     // Timer measure("ModelBatchInference infer");
     std::promise<ModelResponse> response;

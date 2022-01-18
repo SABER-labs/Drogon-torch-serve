@@ -44,16 +44,16 @@ wrk -t8 -c100 -d60 -s benchmark/fastapi_upload.lua "http://localhost:8088/classi
 Running 1m test @ http://localhost:8088/classify
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    62.94ms   23.30ms 128.98ms   59.62%
-    Req/Sec   191.28     19.48   252.00     63.29%
+    Latency    59.86ms   28.48ms 153.38ms   54.04%
+    Req/Sec   201.17     26.03   282.00     65.40%
   Latency Distribution
-     50%   63.94ms
-     75%   73.42ms
-     90%  101.56ms
-     99%  115.37ms
-  91501 requests in 1.00m, 24.08MB read
-Requests/sec:   1524.01
-Transfer/sec:    410.77KB
+     50%   50.67ms
+     75%   87.50ms
+     90%  103.01ms
+     99%  110.85ms
+  96215 requests in 1.00m, 25.33MB read
+Requests/sec:   1602.83
+Transfer/sec:    432.01KB
 ```
 
 `FastAPI + pytorch`

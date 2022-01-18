@@ -35,7 +35,7 @@ public:
 
     [[noreturn]] void foreverBatchInfer();
 
-    ModelResponse infer(const std::string &req_id, const torch::Tensor &);
+    ModelResponse infer(const torch::Tensor &);
 
 private:
     std::queue<std::pair<std::reference_wrapper<std::promise<ModelResponse>>, std::reference_wrapper<const at::Tensor>>> request_queue;
