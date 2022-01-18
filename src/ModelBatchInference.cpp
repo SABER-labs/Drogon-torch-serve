@@ -38,13 +38,13 @@ void ModelBatchInference::foreverBatchInfer() {
             c10::InferenceMode no_grad(true);
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
             std::vector<torch::Tensor> tensor_images;
-            std::vector<std::string> request_ids;
+            std::vector<std::reference_wrapper<std::promise<ModelResponse>>> response_promises;
             std::vector<torch::jit::IValue> inputs;
             for (size_t i = 0; i < tensors_to_process; ++i) {
-                auto [req_id, tensor_image_ref] = request_queue.front();
+                auto [res_promise, tensor_image_ref] = request_queue.front();
                 auto tensor_image = tensor_image_ref.get();
                 tensor_images.emplace_back(tensor_image);
-                request_ids.emplace_back(req_id);
+                response_promises.emplace_back(res_promise);
                 std::lock_guard<std::mutex> guard(request_queue_mutex);
                 request_queue.pop();
             }
@@ -59,12 +59,11 @@ void ModelBatchInference::foreverBatchInfer() {
             auto [confidences, values] = torch::softmax(output, 1).max(1);
 
             for (int64_t i = 0; i < output.size(0); ++i) {
-                auto response_id = request_ids[i];
+                auto response_promise = response_promises[i];
                 auto imagenet_class = class_idx_to_names[std::to_string(values[i].item<int>())];
                 auto confidence = confidences[i].item<float>();
                 auto response = ModelResponse{imagenet_class, confidence};
-                std::lock_guard<std::mutex> guard(response_queue_mutex);
-                response_queue.insert({response_id, response});
+                response_promise.get().set_value(response);
             }
 
 //            c10::cuda::CUDACachingAllocator::emptyCache();
@@ -76,25 +75,15 @@ void ModelBatchInference::foreverBatchInfer() {
 ModelResponse ModelBatchInference::infer(const std::string &req_id, const torch::Tensor &image_tensor) {
     // Add the image tensor to request queue
     // Timer measure("ModelBatchInference infer");
+    std::promise<ModelResponse> response;
+    auto response_future = response.get_future();
     {
         std::lock_guard<std::mutex> guard(request_queue_mutex);
-        auto pair = std::pair(req_id, std::ref(image_tensor));
+        auto pair = std::pair(std::ref(response), std::ref(image_tensor));
         request_queue.push(pair);
     }
 
-    // Wait for the image to turn up in the response queue.
-    while (response_queue.find(req_id) == response_queue.end()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(POLL_INTERVAL_MS));
-    }
-
-    // Remove from response queue
-    auto model_response = response_queue[req_id];
-
-    {
-        std::lock_guard<std::mutex> guard(response_queue_mutex);
-        response_queue.erase(req_id);
-    }
-
+    auto model_response = response_future.get();
     // Send back results
     return std::move(model_response);
 }

@@ -38,9 +38,7 @@ public:
     ModelResponse infer(const std::string &req_id, const torch::Tensor &);
 
 private:
-    std::queue<std::pair<std::string, std::reference_wrapper<const at::Tensor>>> request_queue;
-    std::unordered_map<std::string, ModelResponse> response_queue;
-    std::mutex response_queue_mutex;
+    std::queue<std::pair<std::reference_wrapper<std::promise<ModelResponse>>, std::reference_wrapper<const at::Tensor>>> request_queue;
     std::mutex request_queue_mutex;
 
     torch::jit::Module model;
