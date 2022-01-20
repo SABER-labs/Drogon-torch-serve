@@ -54,7 +54,7 @@ void ModelBatchInference::foreverBatchInfer() {
             auto batched_tensor = torch::cat(tensor_images, 0);
 
             if (device_type == torch::kCUDA) {
-                batched_tensor = batched_tensor.to(device_type).permute({0, 3, 1, 2}).div(255).toType(torch::kFloat16);
+                batched_tensor = batched_tensor.to(device_type).toType(torch::kFloat16).permute({0, 3, 1, 2}).div(255);
             } else {
                 batched_tensor = batched_tensor.to(device_type).permute({0, 3, 1, 2}).div(255);
             }

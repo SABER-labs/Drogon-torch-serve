@@ -100,7 +100,7 @@
     "app": {
         //number_of_threads: The number of IO threads, 1 by default, if the value is set to 0, the number of threads
         //is the number of CPU cores
-        "number_of_threads": 14,
+        "number_of_threads": 21,
         //enable_session: False by default
         "enable_session": false,
         "session_timeout": 0,
@@ -220,7 +220,7 @@
         //uses sendfile() system-call to send static files to clients;
         "use_sendfile": true,
         //use_gzip: True by default, use gzip to compress the response body's content;
-        "use_gzip": true,
+        "use_gzip": false,
         //use_brotli: False by default, use brotli to compress the response body's content;
         "use_brotli": false,
         //static_files_cache_time: 5 (seconds) by default, the time in which the static file response is cached,
@@ -248,10 +248,10 @@
         "server_header_field": "",
         //enable_server_header: Set true to force drogon to add a 'Server' header to each HTTP response. The default 
         //value is true.
-        "enable_server_header": true,
+        "enable_server_header": false,
         //enable_date_header: Set true to force drogon to add a 'Date' header to each HTTP response. The default 
         //value is true.
-        "enable_date_header": true,
+        "enable_date_header": false,
         //keepalive_requests: Set the maximum number of requests that can be served through one keep-alive connection. 
         //After the maximum number of requests are made, the connection is closed.
         //The default value of 0 means no limit.
