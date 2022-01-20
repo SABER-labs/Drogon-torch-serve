@@ -40,6 +40,7 @@ public:
 private:
     std::queue<std::pair<std::reference_wrapper<std::promise<ModelResponse>>, std::reference_wrapper<const at::Tensor>>> request_queue;
     std::mutex request_queue_mutex;
+    torch::DeviceType device_type;
 
     torch::jit::Module model;
     nlohmann::json class_idx_to_names;

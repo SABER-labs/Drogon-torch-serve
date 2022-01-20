@@ -9,11 +9,13 @@ ModelBatchInference::ModelBatchInference() {
     std::ifstream i("../model_resources/class_names.json");
     i >> class_idx_to_names;
     if (torch::cuda::is_available()) {
-        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cuda.pt"), torch::kCUDA);
+        device_type = torch::kCUDA;
+        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cuda.pt"), device_type);
         model.to(torch::kFloat16);
         LOG_INFO << "Model loaded onto CUDA";
     } else {
-        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cpu.pt"), torch::kCPU);
+        device_type = torch::kCPU;
+        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cpu.pt"), device_type);
         LOG_INFO << "Model loaded onto CPU";
     }
 
@@ -49,11 +51,14 @@ void ModelBatchInference::foreverBatchInfer() {
                 request_queue.pop();
             }
 
-            auto batched_tensor = torch::cat(tensor_images, 0)
-                    .to(torch::kCUDA)
-                    .permute({0, 3, 1, 2})
-                    .toType(torch::kFloat16)
-                    .div(255);
+            auto batched_tensor = torch::cat(tensor_images, 0);
+
+            if (device_type == torch::kCUDA) {
+                batched_tensor = batched_tensor.to(device_type).permute({0, 3, 1, 2}).div(255).toType(torch::kFloat16);
+            } else {
+                batched_tensor = batched_tensor.to(device_type).permute({0, 3, 1, 2}).div(255);
+            }
+
             inputs.emplace_back(batched_tensor);
             auto output = model.forward(inputs).toTensor();
             auto [confidences, values] = torch::softmax(output, 1).max(1);
