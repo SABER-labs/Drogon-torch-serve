@@ -17,8 +17,6 @@ Task<> ImageClass::classify(HttpRequestPtr req,
 
     auto &file = fileUpload.getFiles()[0];
     LOG_DEBUG << "Classify function was called.";
-    auto response_string = std::string("");
-    c10::InferenceMode no_grad(true);
     std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
     auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
     cv::Mat image_transformed;
@@ -28,9 +26,8 @@ Task<> ImageClass::classify(HttpRequestPtr req,
             .unsqueeze(0);
     int randomIndex = rand() % batch_inference_engines.size();
     auto response = co_await batch_inference_engines[randomIndex]->infer(tensor_image);
-    response_string = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     json["status"] = "success";
-    json["message"] = response_string;
+    json["message"] = fmt::format("Class found for image was {} with confidence {:.{}f}.", response.className, response.confidence, 3);
     auto resp = HttpResponse::newHttpJsonResponse(json);
     callback(resp);
     co_return;
