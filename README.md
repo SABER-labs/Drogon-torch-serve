@@ -87,9 +87,11 @@ Transfer/sec:     44.96KB
 * ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
 * ~~Use ThreadPool for batched inference.~~
 * ~~FP16 Inference~~
+* ~~Uses c++20 coroutines for wait free event loop tasks.~~
 * Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html)
 * Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
 * Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
+* Dockerize for easy usuage.
 
 ## Notes
-* WIP: Just gets the job done for now, not production ready
+* WIP: Just gets the job done for now, not production ready, though tested regularly.
