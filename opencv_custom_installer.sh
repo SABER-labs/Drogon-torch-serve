@@ -42,7 +42,12 @@ if [ ! -d "opencv/build/" ]; then
   -D OPENCV_GENERATE_PKGCONFIG=ON \
   -D OPENCV_PC_FILE_NAME=opencv.pc \
   -D OPENCV_ENABLE_NONFREE=ON \
+  -D BUILD_NEW_PYTHON_SUPPORT=ON \
   -D BUILD_opencv_python3=YES \
+  -D HAVE_opencv_python3=ON \
+  -D PYTHON3_EXECUTABLE=$(which python3) \
+  -D PYTHON3_LIBRARY= $(find $(dirname $(dirname $(which python3))) -name "*libpython3.so*" | head -n 1)\
+  -D PYTHON3_INCLUDE_DIR=$(dirname $(dirname $(which python3)))/include \
   -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
   -D INSTALL_PYTHON_EXAMPLES=OFF \
   -D INSTALL_C_EXAMPLES=OFF \
