@@ -27,5 +27,5 @@ class ImageClass:public drogon::HttpController<ImageClass>
 private:
     std::vector<std::unique_ptr<ModelBatchInference>> batch_inference_engines;
 protected:
-    void classify(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback);
+    Task<> classify(HttpRequestPtr req, std::function<void(const HttpResponsePtr &)> callback);
 };

@@ -40,13 +40,14 @@ void ModelBatchInference::foreverBatchInfer() {
             c10::InferenceMode no_grad(true);
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
             std::vector<torch::Tensor> tensor_images;
-            std::vector<std::reference_wrapper<std::promise<ModelResponse>>> response_promises;
+            std::vector<std::reference_wrapper<coro::event>> response_events;
+            std::vector<std::reference_wrapper<ModelResponse>> responses;
             std::vector<torch::jit::IValue> inputs;
-            for (size_t i = 0; i < tensors_to_process; ++i) {
-                auto [res_promise, tensor_image_ref] = request_queue.front();
-                auto tensor_image = tensor_image_ref.get();
-                tensor_images.emplace_back(tensor_image);
-                response_promises.emplace_back(res_promise);
+            for (int i = 0; i < tensors_to_process; ++i) {
+                auto [model_response, e, tensor_image] = request_queue.front();
+                tensor_images.push_back(tensor_image.get());
+                response_events.push_back(e);
+                responses.push_back(model_response);
                 std::lock_guard<std::mutex> guard(request_queue_mutex);
                 request_queue.pop();
             }
@@ -64,11 +65,12 @@ void ModelBatchInference::foreverBatchInfer() {
             auto [confidences, values] = torch::softmax(output, 1).max(1);
 
             for (int64_t i = 0; i < output.size(0); ++i) {
-                auto response_promise = response_promises[i];
+                auto response = responses[i];
+                auto e = response_events[i];
                 auto imagenet_class = class_idx_to_names[std::to_string(values[i].item<int>())];
                 auto confidence = confidences[i].item<float>();
-                auto response = ModelResponse{imagenet_class, confidence};
-                response_promise.get().set_value(response);
+                response.get().setValues(imagenet_class, confidence);
+                e.get().set();
             }
 
 //            c10::cuda::CUDACachingAllocator::emptyCache();
@@ -77,18 +79,17 @@ void ModelBatchInference::foreverBatchInfer() {
     }
 }
 
-ModelResponse ModelBatchInference::infer(const torch::Tensor &image_tensor) {
+drogon::Task<ModelResponse> ModelBatchInference::infer(const torch::Tensor &image_tensor) {
     // Add the image tensor to request queue
     // Timer measure("ModelBatchInference infer");
-    std::promise<ModelResponse> response;
-    auto response_future = response.get_future();
+    ModelResponse model_response;
+    coro::event e;
     {
         std::lock_guard<std::mutex> guard(request_queue_mutex);
-        auto pair = std::pair(std::ref(response), std::ref(image_tensor));
-        request_queue.push(pair);
+        request_queue.emplace(std::ref(model_response), std::ref(e), std::ref(image_tensor));
     }
 
-    auto model_response = response_future.get();
+    co_await e;
     // Send back results
-    return std::move(model_response);
+    co_return std::move(model_response);
 }
