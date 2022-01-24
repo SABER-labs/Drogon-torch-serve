@@ -32,7 +32,7 @@ if [ ! -d "opencv/build/" ]; then
   -D WITH_JPEG=ON \
   -D BUILD_JPEG=OFF \
   -D JPEG_INCLUDE_DIR=/opt/libjpeg-turbo/include/ \
-  -D JPEG_LIBRARY=/opt/libjpeg-turbo/lib64/libturbojpeg.so \
+  -D JPEG_LIBRARY=/opt/libjpeg-turbo/lib64/libjpeg.a \
   -D WITH_TBB=ON \
   -D ENABLE_FAST_MATH=1 \
   -D WITH_V4L=OFF \
