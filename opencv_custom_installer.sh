@@ -32,7 +32,7 @@ if [ ! -d "opencv/build/" ]; then
   -D WITH_JPEG=ON \
   -D BUILD_JPEG=OFF \
   -D JPEG_INCLUDE_DIR=/opt/libjpeg-turbo/include/ \
-  -D JPEG_LIBRARY=/opt/libjpeg-turbo/lib64/libjpeg.a \
+  -D JPEG_LIBRARY=/opt/libjpeg-turbo/lib64/libturbojpeg.so \
   -D WITH_TBB=ON \
   -D ENABLE_FAST_MATH=1 \
   -D WITH_V4L=OFF \
@@ -47,7 +47,8 @@ if [ ! -d "opencv/build/" ]; then
   -D HAVE_opencv_python3=ON \
   -D PYTHON3_EXECUTABLE=$(which python3) \
   -D PYTHON3_LIBRARY= $(find $(dirname $(dirname $(which python3))) -name "*libpython3.so*" | head -n 1)\
-  -D PYTHON3_INCLUDE_DIR=$(dirname $(dirname $(which python3)))/include \
+  -D PYTHON3_INCLUDE_DIR=$(dirname $(dirname $(which python3)))/include/python3.9 \
+  -D PYTHON3_PACKAGES_PATH=$(dirname $(dirname $(which python3)))/lib/python3.9/site-packages \
   -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
   -D INSTALL_PYTHON_EXAMPLES=OFF \
   -D INSTALL_C_EXAMPLES=OFF \
