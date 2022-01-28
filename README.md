@@ -1,6 +1,11 @@
 # C++ Torch Server
 ### Serve torch models as rest-api using [Drogon](https://github.com/drogonframework/drogon), example included for resnet18 model for Imagenet. Benchmarks show improvement of ~6-10x throughput and latencies for resnet18 at peak load.
 
+## Architecture
+* API request handing and model Pre-processing in the Drogon Controller `controllers/ImageClass.cc`
+* Batched Model Inference logic & post-processing in `src/ModelBatchInference.cpp`
+* TODO: Currently pre-processing, inference & post-processing isn't seperated out.
+
 ## Build & Run Instructions
 ```bash
 # Create Optimized models for your machine.
@@ -95,7 +100,8 @@ Transfer/sec:     44.96KB
 * Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html)
 * Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
 * Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
-* Dockerize for easy usuage.
+* Dockerize for easy usage.
+* Seperate Pre-Process, Infer and post-preprocessing.
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready, though tested regularly.
