@@ -59,4 +59,4 @@ if [ ! -d "opencv/build/" ]; then
   cd ../..
 fi
 
-[[ ! -f /etc/ld.so.conf.d/opencv.conf ]] && sudo /bin/bash -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' && sudo ldconfig
+[ ! -f /etc/ld.so.conf.d/opencv.conf ] && sudo /bin/bash -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' && sudo ldconfig
