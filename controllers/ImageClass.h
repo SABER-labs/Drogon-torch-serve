@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 #include <torch/torch.h>
 #include "includes/json.hpp"
-#include "src/ModelBatchInference.h"
+#include "lib/ModelBatchInference.h"
 using namespace drogon;
 class ImageClass:public drogon::HttpController<ImageClass>
 {

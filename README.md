@@ -83,7 +83,7 @@ Transfer/sec:     44.96KB
 
 ## Architecture
 * API request handing and model Pre-processing in the Drogon Controller `controllers/ImageClass.cc`
-* Batched Model Inference logic & post-processing in `src/ModelBatchInference.cpp`
+* Batched Model Inference logic & post-processing in `lib/ModelBatchInference.cpp`
 * TODO: Currently pre-processing, inference & post-processing isn't seperated out.
 
 ## Dependencies
