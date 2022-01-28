@@ -3,6 +3,10 @@
 
 ## Build & Run Instructions
 ```bash
+# Create Optimized models for your machine.
+python3 optimize_model_for_inference.py
+
+# Build and Run Server
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 ./rest_server
