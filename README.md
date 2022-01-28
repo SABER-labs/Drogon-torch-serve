@@ -1,11 +1,6 @@
 # C++ Torch Server
 ### Serve torch models as rest-api using [Drogon](https://github.com/drogonframework/drogon), example included for resnet18 model for Imagenet. Benchmarks show improvement of ~6-10x throughput and latencies for resnet18 at peak load.
 
-## Architecture
-* API request handing and model Pre-processing in the Drogon Controller `controllers/ImageClass.cc`
-* Batched Model Inference logic & post-processing in `src/ModelBatchInference.cpp`
-* TODO: Currently pre-processing, inference & post-processing isn't seperated out.
-
 ## Build & Run Instructions
 ```bash
 # Create Optimized models for your machine.
@@ -85,6 +80,11 @@ Running 1m test @ http://localhost:8088/classify
 Requests/sec:    216.13
 Transfer/sec:     44.96KB
 ```
+
+## Architecture
+* API request handing and model Pre-processing in the Drogon Controller `controllers/ImageClass.cc`
+* Batched Model Inference logic & post-processing in `src/ModelBatchInference.cpp`
+* TODO: Currently pre-processing, inference & post-processing isn't seperated out.
 
 ## Dependencies
 * [Libtorch](https://pytorch.org/get-started/locally/)
