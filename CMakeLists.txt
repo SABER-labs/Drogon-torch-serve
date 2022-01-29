@@ -27,14 +27,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
-set(CMAKE_PREFIX_PATH "/media/sdd_1tb/miniconda3")
 
 add_executable(${PROJECT_NAME} main.cc controllers/)
 
 find_package(Drogon CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-
-find_package(Torch REQUIRED HINTS "/media/sdd_1tb/miniconda3/lib/python3.9/site-packages/torch/share/cmake/")
+find_package(Torch REQUIRED)
 find_package(TorchVision REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon fmt::fmt ${TORCH_LIBRARIES} "${OpenCV_LIBS}" TorchVision::TorchVision libcoro)
