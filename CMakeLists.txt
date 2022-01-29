@@ -7,9 +7,7 @@ CPMAddPackage(
         VERSION 0.3
         GITHUB_REPOSITORY "jbaldwin/libcoro"
         GIT_TAG "v0.3"
-        OPTIONS
-            "LIBCORO_BUILD_TESTS OFF"
-            "LIBCORO_BUILD_EXAMPLES OFF"
+        OPTIONS "LIBCORO_BUILD_TESTS OFF" "LIBCORO_BUILD_EXAMPLES OFF"
 )
 CPMAddPackage(
         NAME fmt
