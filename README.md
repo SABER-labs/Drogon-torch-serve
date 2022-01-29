@@ -4,19 +4,19 @@
 ## Build & Run Instructions
 ```bash
 # Create Optimized models for your machine.
-python3 optimize_model_for_inference.py
+$ python3 optimize_model_for_inference.py
 
 # Build and Run Server
-mkdir build && cd build
+$ mkdir build && cd build
 
-# Where you python libraries, torch cmake files exists
+# add folders to CMAKE_PREFIX_PATH where you python libraries, torch cmake files exists
 # For Clion just add the CMake Prefix path to
 # Settings > Build, Execution, Deployment > Cmake > Profiles > CMake Options
-# Use same compiler which you used to build Torch.
-CC=gcc-10 CXX=g++-10 cmake .. \
+$ cmake -GNinja .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH="/media/sdd_1tb/miniconda3;/media/sdd_1tb/miniconda3/lib/python3.9/site-packages/torch/share/cmake"
-./rest_server
+$ ninja
+$ ./rest_server
 ```
 
 ## Client Instructions

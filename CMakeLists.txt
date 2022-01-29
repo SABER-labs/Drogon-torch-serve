@@ -1,19 +1,22 @@
 cmake_minimum_required(VERSION 3.5)
 project(rest_server CXX)
 
-include(FetchContent)
-FetchContent_Declare(
-        libcoro
-        GIT_REPOSITORY https://github.com/jbaldwin/libcoro.git
-        GIT_TAG        v0.3
+include(cmake/CPM.cmake)
+CPMAddPackage(
+        NAME libcoro
+        VERSION 0.3
+        GITHUB_REPOSITORY "jbaldwin/libcoro"
+        GIT_TAG "v0.3"
+        OPTIONS
+            "LIBCORO_BUILD_TESTS OFF"
+            "LIBCORO_BUILD_EXAMPLES OFF"
 )
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG        8.1.1
+CPMAddPackage(
+        NAME fmt
+        VERSION 8.1.1
+        GITHUB_REPOSITORY "fmtlib/fmt"
+        GIT_TAG "8.1.1"
 )
-FetchContent_MakeAvailable(libcoro)
-FetchContent_MakeAvailable(fmt)
 
 include(CheckIncludeFileCXX)
 
