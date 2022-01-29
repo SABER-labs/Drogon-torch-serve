@@ -16,17 +16,9 @@ CPMAddPackage(
         GIT_TAG "8.1.1"
 )
 
-include(CheckIncludeFileCXX)
-
-check_include_file_cxx(any HAS_ANY)
-check_include_file_cxx(string_view HAS_STRING_VIEW)
-check_include_file_cxx(coroutine HAS_COROUTINE)
-check_include_file_cxx(format HAS_FORMAT)
-
 set(CMAKE_CXX_STANDARD 20)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 
 add_executable(${PROJECT_NAME} main.cc controllers/)
@@ -36,8 +28,8 @@ find_package(OpenCV REQUIRED)
 find_package(Torch REQUIRED)
 find_package(TorchVision REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon fmt::fmt ${TORCH_LIBRARIES} "${OpenCV_LIBS}" TorchVision::TorchVision libcoro)
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++20 -fcoroutines)
+target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon fmt::fmt ${TORCH_LIBRARIES} ${OpenCV_LIBS} TorchVision::TorchVision libcoro)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++20 -fcoroutines $<$<CONFIG:Release>:-march=native -mtune=native -flto>)
 
 message(STATUS "use c++20")
 
@@ -61,4 +53,5 @@ target_sources(${PROJECT_NAME}
                ${MODEL_SRC}
                 ${LIB_SRC})
 
+# Test targets
 add_subdirectory(test)
