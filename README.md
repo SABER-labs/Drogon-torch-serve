@@ -91,7 +91,6 @@ Transfer/sec:     44.96KB
 ## Architecture
 * API request handing and model Pre-processing in the Drogon Controller `controllers/ImageClass.cc`
 * Batched Model Inference logic & post-processing in `lib/ModelBatchInference.cpp`
-* TODO: Currently pre-processing, inference & post-processing isn't seperated out.
 
 ## Dependencies
 * [Libtorch](https://pytorch.org/get-started/locally/)
@@ -99,16 +98,18 @@ Transfer/sec:     44.96KB
 * Libopencv-dev `sudo apt-get install -y libopencv-dev`
 * [Install Drogon](https://github.com/drogonframework/drogon/wiki/ENG-02-Installation)
 
-## TODO
-* ~~Will include multi-tenant batched inference on another thread as done in https://github.com/SABER-labs/torch_batcher~~
-* ~~Use ThreadPool for batched inference.~~
-* ~~FP16 Inference~~
-* ~~Uses c++20 coroutines for wait free event loop tasks.~~
-* Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html)
-* Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
-* Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
-* Dockerize for easy usage.
-* Seperate Pre-Process, Infer and post-preprocessing.
+## TODOS
+* [x] Multithreaded batched inference
+* [x] FP16 Inference
+* [x] Uses c++20 coroutines for wait free event loop tasks
+* [x] Add compiler optimizations for cmake.
+* [ ] Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html), Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
+* [ ] Optimizations like Channel last, ONNX and benchmark whats faster.
+* [ ] Benchmark framework against [mosec](https://github.com/mosecorg/mosec)
+* [ ] Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
+* [ ] Seperate Pre-Process, Infer and post-preprocessing.
+* [ ] Dockerize for easy usage.
+
 
 ## Notes
 * WIP: Just gets the job done for now, not production ready, though tested regularly.
