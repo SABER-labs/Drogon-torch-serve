@@ -103,8 +103,11 @@ Transfer/sec:     44.96KB
 * [x] FP16 Inference
 * [x] Uses c++20 coroutines for wait free event loop tasks
 * [x] Add compiler optimizations for cmake.
+* [x] [Benchmark](https://github.com/viig99/Pytorch_Inference_Benchmarker) optimizations like Channel last, ONNX, TensorRT and report what's faster.
+* [ ] User [Torch-TensorRT](https://github.com/NVIDIA/Torch-TensorRT) for inference, fastest on CUDA devices. Cuts down from 5ms to 1-2ms
+.
+* [ ] Use [Torch Nvjpeg](https://github.com/itsliupeng/torchnvjpeg) for faster image decoding, currently spends 2ms on this call with libjpeg-turbo.
 * [ ] Int8 Inference using [FXGraph post-training quantization](https://pytorch.org/docs/stable/quantization.html), Resnet Int8 Quantization [example1](https://github.com/zanvari/resnet50-quantiztion/blob/main/quantization-resnet50.ipynb), [example2](https://github.com/SangbumChoi/PyTorch_Quantization/blob/9773c4397dbf6dd04c3e126524c36e398d8b60e6/quantization.py)
-* [ ] Optimizations like Channel last, ONNX and benchmark whats faster.
 * [ ] Benchmark framework against [mosec](https://github.com/mosecorg/mosec)
 * [ ] Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
 * [ ] Seperate Pre-Process, Infer and post-preprocessing.
