@@ -104,6 +104,7 @@ Transfer/sec:     44.96KB
 * [x] Uses c++20 coroutines for wait free event loop tasks
 * [x] Add compiler optimizations for cmake.
 * [x] [Benchmark](https://github.com/viig99/Pytorch_Inference_Benchmarker) optimizations like Channel last, ONNX, TensorRT and report what's faster.
+* [x] ~~Pin Batched tensor used for inference to memory and re-use at every inference.~~ *No Improvement.*
 * [ ] User [Torch-TensorRT](https://github.com/NVIDIA/Torch-TensorRT) for inference, fastest on CUDA devices. Cuts down from 5ms to 1-2ms
 .
 * [ ] Use [Torch Nvjpeg](https://github.com/itsliupeng/torchnvjpeg) for faster image decoding, currently spends 2ms on this call with libjpeg-turbo.
