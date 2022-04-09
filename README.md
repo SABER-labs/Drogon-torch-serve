@@ -14,7 +14,7 @@ $ mkdir build && cd build
 # Settings > Build, Execution, Deployment > Cmake > Profiles > CMake Options
 $ cmake -GNinja .. \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_PREFIX_PATH="/media/sdd_1tb/miniconda3;/media/sdd_1tb/miniconda3/lib/python3.9/site-packages/torch/share/cmake"
+  -DCMAKE_PREFIX_PATH=$(python3 -c 'import torch;print(torch.utils.cmake_prefix_path)')
 $ ninja
 $ ./rest_server
 ```
