@@ -21,7 +21,8 @@ Ort::Session createOrtSession(const std::string &model_path) {
     Ort::SessionOptions session_options;
     session_options.AddConfigEntry("session.set_denormal_as_zero", "1");
     session_options.DisableCpuMemArena();
-    session_options.SetIntraOpNumThreads(5);
+    auto num_threads = std::thread::hardware_concurrency() >= 4 ? int(std::thread::hardware_concurrency() / 4) : 1;
+    session_options.SetIntraOpNumThreads(num_threads);
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     Ort::Session session(env, model_path.c_str(), session_options);
     return session;

@@ -33,7 +33,13 @@ Task<> ImageClass::classify(HttpRequestPtr req,
 
 ImageClass::ImageClass() {
     srand(time(nullptr));
-    for (int i = 0; i < NUM_INFERENCE_ENGINES; ++i) {
+
+    char * val = getenv( "NUM_INFERENCE_ENGINES" );
+    uint num_inference_engines = val == nullptr ? (std::thread::hardware_concurrency() / 5) : std::stoi(val);
+
+    LOG_INFO << "Starting " << num_inference_engines << " inference engines.";
+
+    for (uint i = 0; i < num_inference_engines; ++i) {
         batch_inference_engines.emplace_back(std::make_unique<ModelBatchInference>());
         std::thread forever_infer([this, i]() {
             batch_inference_engines[i]->foreverBatchInfer();

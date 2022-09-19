@@ -19,7 +19,7 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get install -y \
     libtool pkg-config \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+COPY ./ /app
 
 WORKDIR /app
 RUN mkdir cmake-build-release && cd cmake-build-release \
@@ -28,5 +28,4 @@ RUN mkdir cmake-build-release && cd cmake-build-release \
 
 # Run
 WORKDIR /app/cmake-build-release
-EXPOSE 8088
-CMD ["./blaze"]
+ENTRYPOINT ["./blaze"]
