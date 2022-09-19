@@ -2,28 +2,15 @@
 // Created by vigi99 on 16/01/22.
 //
 
+#include <fstream>
 #include "ModelBatchInference.h"
 
 ModelBatchInference::ModelBatchInference() {
     Timer measure("ModelBatchInference constructor");
-    std::ifstream i("../model_resources/class_names.json");
-    i >> class_idx_to_names;
-    if (torch::cuda::is_available()) {
-        device_type = torch::kCUDA;
-        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cuda.pt"), device_type);
-        model.to(torch::kFloat16);
-        LOG_INFO << "Model loaded onto CUDA";
-    } else {
-        device_type = torch::kCPU;
-        model = torch::jit::load(std::filesystem::absolute("../model_resources/resnet18_traced_cpu.pt"), device_type);
-        LOG_INFO << "Model loaded onto CPU";
-    }
-
-    {
-        torch::NoGradGuard no_grad_t;
-        model.eval();
-    }
-
+    std::ifstream class_names_path("../model_resources/class_names.json");
+    class_idx_to_names = nlohmann::json::parse(class_names_path);
+    session = createOrtSession("../model_resources/resnet18-v2-7.onnx");
+    LOG_INFO << "Model loaded onto CPU";
 }
 
 void ModelBatchInference::foreverBatchInfer() {
@@ -37,49 +24,59 @@ void ModelBatchInference::foreverBatchInfer() {
         }
 
         if (!request_queue.empty()) {
-            c10::InferenceMode no_grad(true);
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
-            std::vector<torch::Tensor> tensor_images;
+            std::vector<cv::Mat> tensor_images;
             std::vector<std::reference_wrapper<coro::event>> response_events;
             std::vector<std::reference_wrapper<ModelResponse>> responses;
-            std::vector<torch::jit::IValue> inputs;
             for (int i = 0; i < tensors_to_process; ++i) {
                 auto [model_response, e, tensor_image] = request_queue.front();
-                tensor_images.push_back(tensor_image.get());
+                tensor_images.push_back(processImage(tensor_image.get()));
                 response_events.push_back(e);
                 responses.push_back(model_response);
                 std::lock_guard<std::mutex> guard(request_queue_mutex);
                 request_queue.pop();
             }
 
-            auto batched_tensor = torch::cat(tensor_images, 0);
+            auto num_classes = (int) class_idx_to_names.size();
+            auto [inputTensorValues, outputTensorValues,
+                    inputDims, outputDims] = generateInputOutputTensorValuesForORT(tensor_images, num_classes);
 
-            if (device_type == torch::kCUDA) {
-                batched_tensor = batched_tensor.to(device_type).toType(torch::kFloat16).permute({0, 3, 1, 2}).div(255);
-            } else {
-                batched_tensor = batched_tensor.to(device_type).permute({0, 3, 1, 2}).div(255);
-            }
+            Ort::AllocatorWithDefaultOptions allocator;
+            std::vector<const char *> inputNames{session.GetInputName(0, allocator)};
+            std::vector<const char *> outputNames{session.GetOutputName(0, allocator)};
 
-            inputs.emplace_back(batched_tensor);
-            auto output = model.forward(inputs).toTensor();
-            auto [confidences, values] = torch::softmax(output, 1).max(1);
+            auto memoryInfo = Ort::MemoryInfo::CreateCpu(
+                    OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+            std::vector<Ort::Value> inputTensors;
+            std::vector<Ort::Value> outputTensors;
 
-            for (int64_t i = 0; i < output.size(0); ++i) {
+            inputTensors.push_back(Ort::Value::CreateTensor<float>(
+                    memoryInfo, inputTensorValues.data(), inputTensorValues.size(), inputDims.data(),
+                    inputDims.size()));
+            outputTensors.push_back(Ort::Value::CreateTensor<float>(
+                    memoryInfo, outputTensorValues.data(), outputTensorValues.size(),
+                    outputDims.data(), outputDims.size()));
+
+            session.Run(Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
+                        inputTensors.size(), outputNames.data(), outputTensors.data(),
+                        outputTensors.size());
+
+            for (int64_t i = 0; i < tensors_to_process; ++i) {
                 auto response = responses[i];
                 auto e = response_events[i];
-                auto imagenet_class = class_idx_to_names[std::to_string(values[i].item<int>())];
-                auto confidence = confidences[i].item<float>();
+                auto begin_idx = outputTensorValues.begin() + i * num_classes;
+                auto end_idx = outputTensorValues.begin() + (i + 1) * num_classes;
+                auto [confidence, imagenet_class] = getTopResult(begin_idx, end_idx, class_idx_to_names);
                 response.get().setValues(imagenet_class, confidence);
                 e.get().set();
             }
 
-//            c10::cuda::CUDACachingAllocator::emptyCache();
         }
 
     }
 }
 
-drogon::Task<ModelResponse> ModelBatchInference::infer(const torch::Tensor &image_tensor) {
+drogon::Task<ModelResponse> ModelBatchInference::infer(const cv::Mat& image_tensor) {
     // Add the image tensor to request queue
     // Timer measure("ModelBatchInference infer");
     ModelResponse model_response;

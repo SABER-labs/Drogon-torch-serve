@@ -8,14 +8,11 @@
 #include <queue>
 #include <chrono>
 #include <thread>
-#include <c10/cuda/CUDAGuard.h>
-#include <cuda_runtime_api.h>
-#include <torch/script.h>
-#include <torch/torch.h>
-#include <torchvision/models/resnet.h>
-#include <torch/expanding_array.h>
+#include <opencv2/opencv.hpp>
+#include <onnxruntime_cxx_api.h>
 #include "includes/json.hpp"
 #include "lib/Utilities.hpp"
+#include "lib/OnnxUtilities.h"
 #include <drogon/drogon.h>
 #include <coro/coro.hpp>
 
@@ -35,7 +32,7 @@ public:
 struct QueueRequest {
     std::reference_wrapper<ModelResponse> response;
     std::reference_wrapper<coro::event> e;
-    std::reference_wrapper<const at::Tensor> image_tensor;
+    std::reference_wrapper<const cv::Mat> image_tensor;
 };
 
 static const int MAX_WAIT_IN_MS = 4;
@@ -49,13 +46,11 @@ public:
 
     [[noreturn]] void foreverBatchInfer();
 
-    drogon::Task<ModelResponse> infer(const torch::Tensor &);
+    drogon::Task<ModelResponse> infer(const cv::Mat &);
 
 private:
     std::queue<QueueRequest> request_queue;
     std::mutex request_queue_mutex;
-    torch::DeviceType device_type;
-
-    torch::jit::Module model;
+    Ort::Session session{nullptr};
     nlohmann::json class_idx_to_names;
 };

@@ -1,14 +1,13 @@
 #define DROGON_TEST_MAIN
+
 #include <drogon/drogon_test.h>
 #include <drogon/drogon.h>
 
-DROGON_TEST(BasicTest)
-{
+DROGON_TEST(BasicTest) {
     // Add your tests here
 }
 
-int main(int argc, char** argv) 
-{
+int main(int argc, char **argv) {
     using namespace drogon;
 
     std::promise<void> p1;

@@ -1,12 +1,14 @@
-import utils
 from fastapi import FastAPI, File, UploadFile
-from fastapi.staticfiles import StaticFiles
+
+import utils
 
 app = FastAPI()
+
 
 @app.get("/")
 def home():
     return 'OK'
+
 
 @app.post("/classify")
 async def classify(image: UploadFile = File(...)):
