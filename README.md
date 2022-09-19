@@ -9,7 +9,7 @@
 $ python3 optimize_model_for_inference.py
 
 # Build and Run Server
-$ docker compose up
+$ docker compose run --service-ports blaze
 ```
 
 ## Development
