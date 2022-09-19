@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 #include "includes/json.hpp"
+#include <thread>
 
 int64_t vectorProduct(const std::vector<int64_t>&);
 
