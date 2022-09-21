@@ -7,9 +7,9 @@
 
 ModelBatchInference::ModelBatchInference() {
     Timer measure("ModelBatchInference constructor");
-    std::ifstream class_names_path("../model_resources/class_names.json");
+    std::ifstream class_names_path("/app/model_resources/class_names.json");
     class_idx_to_names = nlohmann::json::parse(class_names_path);
-    session = createOrtSession("../model_resources/resnet18-v2-7.onnx");
+    session = createOrtSession("/app/model_resources/resnet18-v2-7.onnx");
     LOG_INFO << "Model loaded onto CPU";
 }
 
@@ -42,11 +42,13 @@ void ModelBatchInference::foreverBatchInfer() {
                     inputDims, outputDims] = generateInputOutputTensorValuesForORT(tensor_images, num_classes);
 
             Ort::AllocatorWithDefaultOptions allocator;
-            std::vector<const char *> inputNames{session.GetInputName(0, allocator)};
-            std::vector<const char *> outputNames{session.GetOutputName(0, allocator)};
+            char* inputName = session.GetInputName(0, allocator);
+            char* outputName = session.GetOutputName(0, allocator);
+            std::vector<char *> inputNames{inputName};
+            std::vector<char*> outputNames{outputName};
 
             auto memoryInfo = Ort::MemoryInfo::CreateCpu(
-                    OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+                    OrtAllocatorType::OrtDeviceAllocator, OrtMemType::OrtMemTypeDefault);
             std::vector<Ort::Value> inputTensors;
             std::vector<Ort::Value> outputTensors;
 
@@ -60,6 +62,9 @@ void ModelBatchInference::foreverBatchInfer() {
             session.Run(Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
                         inputTensors.size(), outputNames.data(), outputTensors.data(),
                         outputTensors.size());
+
+            allocator.Free(inputName);
+            allocator.Free(outputName);
 
             for (int64_t i = 0; i < tensors_to_process; ++i) {
                 auto response = responses[i];
