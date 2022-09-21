@@ -32,9 +32,16 @@ Ort::Session createOrtSession(const std::string &model_path) {
 }
 
 std::tuple<std::vector<float>, std::vector<float>, std::vector<int64_t>, std::vector<int64_t>>
-generateInputOutputTensorValuesForORT(std::vector<cv::Mat> &images, int64_t num_classes) {
+generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const cv::Mat>> &images, int64_t num_classes) {
     auto batch_size = (int) images.size();
-    auto input_tensor_size = images[0].size;
+
+    std::vector<cv::Mat> processed_images;
+
+    for (auto &image : images) {
+        processed_images.emplace_back(processImage(image));
+    }
+
+    auto input_tensor_size = processed_images[0].size;
     std::vector<int64_t> inputDims = {batch_size, input_tensor_size[1], input_tensor_size[2], input_tensor_size[3]};
     std::vector<int64_t> outputDims = {batch_size, num_classes};
     size_t outputTensorSize = vectorProduct(outputDims);
@@ -44,16 +51,16 @@ generateInputOutputTensorValuesForORT(std::vector<cv::Mat> &images, int64_t num_
     std::vector<Ort::Value> inputTensors;
     std::vector<Ort::Value> outputTensors;
 
-    for (auto &image: images) {
+    for (auto &image: processed_images) {
         std::copy(image.begin<float>(), image.end<float>(), std::back_inserter(inputTensorValues));
     }
 
     return std::make_tuple(inputTensorValues, outputTensorValues, inputDims, outputDims);
 }
 
-cv::Mat processImage(const cv::Mat &image) {
+cv::Mat processImage(std::reference_wrapper<const cv::Mat> image) {
     cv::Mat image_transformed, preprocessedImage;
-    cv::resize(image, image_transformed,
+    cv::resize(image.get(), image_transformed,
                cv::Size(224, 224),
                cv::InterpolationFlags::INTER_CUBIC);
     cv::cvtColor(image_transformed, image_transformed,

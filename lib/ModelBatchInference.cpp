@@ -25,12 +25,12 @@ void ModelBatchInference::foreverBatchInfer() {
 
         if (!request_queue.empty()) {
             int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
-            std::vector<cv::Mat> tensor_images;
+            std::vector<std::reference_wrapper<const cv::Mat>> tensor_images;
             std::vector<std::reference_wrapper<coro::event>> response_events;
             std::vector<std::reference_wrapper<ModelResponse>> responses;
             for (int i = 0; i < tensors_to_process; ++i) {
                 auto [model_response, e, tensor_image] = request_queue.front();
-                tensor_images.push_back(processImage(tensor_image.get()));
+                tensor_images.push_back(tensor_image);
                 response_events.push_back(e);
                 responses.push_back(model_response);
                 std::lock_guard<std::mutex> guard(request_queue_mutex);
@@ -83,7 +83,7 @@ void ModelBatchInference::foreverBatchInfer() {
 
 drogon::Task<ModelResponse> ModelBatchInference::infer(const cv::Mat& image_tensor) {
     // Add the image tensor to request queue
-    // Timer measure("ModelBatchInference infer");
+    Timer measure("ModelBatchInference infer");
     ModelResponse model_response;
     coro::event e;
     {
