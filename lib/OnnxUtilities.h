@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 #include "includes/json.hpp"
+#include <trantor/utils/Logger.h>
 #include <thread>
 
 int64_t vectorProduct(const std::vector<int64_t>&);
@@ -19,3 +20,5 @@ Ort::Session createOrtSession(const std::string&);
 std::tuple<std::vector<float>, std::vector<float>, std::vector<int64_t>, std::vector<int64_t>> generateInputOutputTensorValuesForORT(std::vector<cv::Mat>&, int64_t);
 
 cv::Mat processImage(const cv::Mat&);
+
+uint getNumInferenceEngineThreads();

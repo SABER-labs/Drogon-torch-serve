@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <opencv2/opencv.hpp>
 #include "lib/ModelBatchInference.h"
+#include "lib/OnnxUtilities.h"
 #include <thread>
 
 using namespace drogon;

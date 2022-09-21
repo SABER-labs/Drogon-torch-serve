@@ -7,4 +7,4 @@ services:
     volumes:
       - .:/app
     environment:
-      - NUM_INFERENCE_ENGINES=1
+      - NUM_INFERENCE_ENGINES=4
