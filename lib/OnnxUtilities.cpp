@@ -21,8 +21,11 @@ Ort::Session createOrtSession(const std::string &model_path) {
     Ort::SessionOptions session_options;
     session_options.AddConfigEntry("session.set_denormal_as_zero", "1");
     session_options.DisableCpuMemArena();
-    auto num_threads = std::thread::hardware_concurrency() >= 4 ? int(std::thread::hardware_concurrency() / 4) : 1;
+
+    auto num_threads = (int) std::max(1u, std::thread::hardware_concurrency() / getNumInferenceEngineThreads());
     session_options.SetIntraOpNumThreads(num_threads);
+
+    LOG_INFO << "Setting intra_op threads to " << num_threads << " .";
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     Ort::Session session(env, model_path.c_str(), session_options);
     return session;
@@ -65,4 +68,10 @@ cv::Mat processImage(const cv::Mat &image) {
     cv::merge(channels, 3, image_transformed);
     cv::dnn::blobFromImage(image_transformed, preprocessedImage);
     return preprocessedImage;
+}
+
+uint getNumInferenceEngineThreads() {
+    char * val = getenv( "NUM_INFERENCE_ENGINES" );
+    uint num_inference_engines = val == nullptr ? (std::thread::hardware_concurrency() / 5) : std::stoi(val);
+    return num_inference_engines;
 }

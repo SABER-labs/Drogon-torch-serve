@@ -9,7 +9,7 @@
 
 class Timer {
 public:
-    explicit Timer(std::string) : start(std::chrono::high_resolution_clock::now()) {}
+    explicit Timer(std::string name) : start(std::chrono::high_resolution_clock::now()), name_{name} {}
 
     ~Timer() {
         auto time_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
