@@ -25,6 +25,17 @@ RUN mkdir -p build && cd build \
     && cmake -G Ninja -DCMAKE_BUILD_TYPE=Release .. \
     && ninja
 
+WORKDIR /
+RUN wget https://github.com/microsoft/mimalloc/archive/refs/tags/v2.0.6.tar.gz \
+    && tar xvzf v2.0.6.tar.gz \
+    && rm -rf v2.0.6.tar.gz \
+    && cd mimalloc-2.0.6 \
+    && mkdir -p out/release && cd out/release \
+    && cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ../.. \
+    && ninja \
+    && ninja install
+
 # Run
 WORKDIR /app/build
+ENV LD_PRELOAD=/usr/local/lib/libmimalloc.so
 ENTRYPOINT ["./blaze"]

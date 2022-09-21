@@ -7,4 +7,5 @@ services:
     volumes:
       - .:/app
     environment:
+      # Around 20% of CPU cores works best.
       - NUM_INFERENCE_ENGINES=4
