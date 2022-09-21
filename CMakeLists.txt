@@ -30,14 +30,14 @@ add_executable(${PROJECT_NAME} main.cc controllers/)
 target_include_directories(${PROJECT_NAME} PRIVATE "${ONNXRUNTIME_DIR}/include")
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon fmt::fmt ${OpenCV_LIBS} libcoro "${ONNXRUNTIME_DIR}/lib/libonnxruntime.so")
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++20 -fcoroutines $<$<CONFIG:Release>:-march=native -mtune=native -flto>)
-#
-#
+
+
 aux_source_directory(controllers CTL_SRC)
 aux_source_directory(filters FILTER_SRC)
 aux_source_directory(plugins PLUGIN_SRC)
 aux_source_directory(models MODEL_SRC)
 aux_source_directory(lib LIB_SRC)
-#
+
 drogon_create_views(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/views
         ${CMAKE_CURRENT_BINARY_DIR})
 

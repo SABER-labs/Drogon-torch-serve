@@ -1,3 +1,5 @@
+# CLion remote docker environment (How to build docker container, run and stop it)
+#   docker build -t clion/blaze-dev:latest -f Dockerfile.cpp-env-ubuntu .
 FROM drogonframework/drogon:latest
 
 # Install dependency: OpenCV
@@ -15,16 +17,8 @@ RUN mkdir /onnxruntime && cd /onnxruntime \
 
 # Install dependency: development-modules
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get install -y \
-    gcc g++ make ninja-build cmake \
+    build-essential gcc g++ gdb clang make ninja-build cmake autoconf automake \
+    libtool valgrind dos2unix locales-all rsync pkg-config python python-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY ./ /app
-
-WORKDIR /app
-RUN mkdir -p build && cd build \
-    && cmake -G Ninja -DCMAKE_BUILD_TYPE=Release .. \
-    && ninja
-
-# Run
-WORKDIR /app/build
-ENTRYPOINT ["./blaze"]
