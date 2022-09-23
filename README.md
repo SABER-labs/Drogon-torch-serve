@@ -115,6 +115,7 @@ Transfer/sec:     44.96KB
 * [ ] Benchmark framework against [mosec](https://github.com/mosecorg/mosec)
 * [ ] Use [lockfree](https://theboostcpplibraries.com/boost.lockfree) queues
 * [ ] Seperate Pre-Process, Infer and post-preprocessing.
+* [x] Added address & memory leak sanitizers to CMake.
 * [x] Dockerize for easy usage.
 
 ## Notes
