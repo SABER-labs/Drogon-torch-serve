@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(blaze CXX)
 
 include(cmake/CPM.cmake)
+include(cmake/sanitizers.cmake)
+
 CPMAddPackage(
         NAME libcoro
         VERSION 0.3
@@ -22,6 +24,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(ONNXRUNTIME_DIR "/onnxruntime/onnxruntime-linux-x64-1.12.1")
 
+add_sanitizer("AddressLeak")
 find_package(Drogon CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 
