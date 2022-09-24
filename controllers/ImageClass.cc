@@ -15,12 +15,13 @@ Task<> ImageClass::classify(HttpRequestPtr req,
     }
 
     auto &file = fileUpload.getFiles()[0];
-    LOG_DEBUG << "Classify function was called.";
-    std::vector<char> data(file.fileData(), file.fileData() + file.fileLength());
-    auto image = cv::imdecode(cv::Mat(data), cv::ImreadModes::IMREAD_COLOR);
+    auto data_view = file.fileContent();
+    auto image_view = cv::Mat(1, data_view.length(), CV_8UC1, (void*) data_view.data());
+    auto image = cv::imdecode(image_view, cv::IMREAD_COLOR);
 
     int randomIndex = rand() % batch_inference_engines.size();
     auto response = co_await batch_inference_engines[randomIndex]->infer(image);
+
     json["status"] = "success";
     Json::Value prediction;
     prediction["label"] = response.className;

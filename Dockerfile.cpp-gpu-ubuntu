@@ -1,0 +1,47 @@
+# CLion remote docker environment (How to build docker container, run and stop it)
+#   docker build -t clion/blaze-dev:latest -f Dockerfile.cpp-env-ubuntu .
+FROM nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Install dependency: OpenCV
+RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get install -y --no-install-recommends \
+    libopencv-dev \
+    tar wget \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install dependency: ONNX-Runtime
+WORKDIR /
+RUN mkdir /onnxruntime && cd /onnxruntime \
+    && wget https://github.com/microsoft/onnxruntime/releases/download/v1.12.1/onnxruntime-linux-x64-gpu-1.12.1.tgz \
+    && tar -xvf onnxruntime-linux-x64-gpu-1.12.1.tgz \
+    && rm onnxruntime-linux-x64-gpu-1.12.1.tgz
+ENV LD_LIBRARY_PATH=/onnxruntime/onnxruntime-linux-x64-gpu-1.12.1/lib:$LD_LIBRARY_PATH
+
+# Install dependency: development-modules
+RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc-10 g++-10 gdb clang make ninja-build cmake autoconf automake \
+    libtool valgrind dos2unix locales-all rsync pkg-config python python-dev \
+    git openssl libssl-dev libjsoncpp-dev uuid-dev zlib1g-dev libc-ares-dev \
+    libhiredis-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install drogon
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    CC=gcc-10 \
+    CXX=g++-10 \
+    AR=gcc-ar-10 \
+    RANLIB=gcc-ranlib-10 \
+    IROOT=/install
+ENV DROGON_ROOT="$IROOT/drogon"
+ADD https://api.github.com/repos/an-tao/drogon/git/refs/heads/master $IROOT/version.json
+RUN git clone https://github.com/an-tao/drogon $DROGON_ROOT
+WORKDIR $DROGON_ROOT
+RUN ./build.sh
+
+WORKDIR /
+COPY ./ /app

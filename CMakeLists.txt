@@ -22,7 +22,17 @@ message(STATUS "use c++20")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-set(ONNXRUNTIME_DIR "/onnxruntime/onnxruntime-linux-x64-1.12.1")
+
+option(USE_GPU_DEVICE "Use GPU device" OFF)
+
+if(USE_GPU_DEVICE)
+    set(ONNXRUNTIME_DIR "/onnxruntime/onnxruntime-linux-x64-gpu-1.12.1")
+    add_compile_definitions(USE_GPU=1)
+else()
+    set(ONNXRUNTIME_DIR "/onnxruntime/onnxruntime-linux-x64-1.12.1")
+    add_compile_definitions(USE_GPU=0)
+endif()
+message(STATUS "Using GPU: ${USE_GPU_DEVICE}")
 
 add_sanitizer("AddressLeak")
 find_package(Drogon CONFIG REQUIRED)

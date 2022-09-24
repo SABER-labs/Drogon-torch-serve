@@ -35,8 +35,8 @@ struct QueueRequest {
     std::reference_wrapper<const cv::Mat> image_tensor;
 };
 
-static const int MAX_WAIT_IN_MS = 4;
-static const int MAX_BATCH_SIZE = 16;
+static const int MAX_WAIT_IN_MS = 2;
+static const int MAX_BATCH_SIZE = 32;
 static const int POLL_INTERVAL_MS = 1;
 static constexpr int NUM_POOL_LOOPS = MAX_WAIT_IN_MS / POLL_INTERVAL_MS;
 
@@ -51,6 +51,7 @@ public:
 private:
     std::queue<QueueRequest> request_queue;
     std::mutex request_queue_mutex;
+    Ort::Env env{nullptr};
     Ort::Session session{nullptr};
     nlohmann::json class_idx_to_names;
 };
