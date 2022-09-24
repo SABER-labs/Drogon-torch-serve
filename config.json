@@ -1,106 +1,8 @@
-/* This is a JSON format configuration file
- */
 {
-  /*
-  //ssl:The global SSL settings. "key" and "cert" are the path to the SSL key and certificate. While
-  //    "conf" is an array of 1 or 2-element tuples that supplies file style options for `SSL_CONF_cmd`.
-  "ssl": {
-      "cert": "../../trantor/trantor/tests/server.pem",
-      "key": "../../trantor/trantor/tests/server.pem",
-      "conf": [
-          //["Options", "-SessionTicket"],
-          //["Options", "Compression"]
-      ]
-  },
-  // mime: A dictionary that extends the internal MIME type support. Maps extensions into new MIME types
-  // note: This option only adds MIME to the sever. `file_types` above have to be set for the server to serve them.
-  "mime": {
-      // "text/markdown": "md",
-      // "text/gemini": ["gmi", "gemini"]
-  },
-  "listeners": [
-      {
-          //address: Ip address,0.0.0.0 by default
-          "address": "0.0.0.0",
-          //port: Port number
-          "port": 80,
-          //https: If true, use https for security,false by default
-          "https": false
-      },
-      {
-          "address": "0.0.0.0",
-          "port": 443,
-          "https": true,
-          //cert,key: Cert file path and key file path, empty by default,
-          //if empty, use the global setting
-          "cert": "",
-          "key": "",
-          //use_old_tls: enable the TLS1.0/1.1, false by default
-          "use_old_tls": false,
-          "ssl_conf": [
-              //["MinProtocol", "TLSv1.3"]
-          ]
-      }
-  ],
-  "db_clients": [
-      {
-          //name: Name of the client,'default' by default
-          //"name":"",
-          //rdbms: Server type, postgresql,mysql or sqlite3, "postgresql" by default
-          "rdbms": "postgresql",
-          //filename: Sqlite3 db file name
-          //"filename":"",
-          //host: Server address,localhost by default
-          "host": "127.0.0.1",
-          //port: Server port, 5432 by default
-          "port": 5432,
-          //dbname: Database name
-          "dbname": "test",
-          //user: 'postgres' by default
-          "user": "",
-          //passwd: '' by default
-          "passwd": "",
-          //is_fast: false by default, if it is true, the client is faster but user can't call
-          //any synchronous interface of it.
-          "is_fast": false,
-          //client_encoding: The character set used by the client. it is empty string by default which
-          //means use the default character set.
-          //"client_encoding": "",
-          //number_of_connections: 1 by default, if the 'is_fast' is true, the number is the number of
-          //connections per IO thread, otherwise it is the total number of all connections.
-          "number_of_connections": 1,
-          //timeout: -1.0 by default, in seconds, the timeout for executing a SQL query.
-          //zero or negative value means no timeout.
-          "timeout": -1.0
-      }
-  ],
-  "redis_clients": [
-      {
-          //name: Name of the client,'default' by default
-          //"name":"",
-          //host: Server IP, 127.0.0.1 by default
-          "host": "127.0.0.1",
-          //port: Server port, 6379 by default
-          "port": 6379,
-          //passwd: '' by default
-          "passwd": "",
-          //db index: 0 by default
-          "db": 0,
-          //is_fast: false by default, if it is true, the client is faster but user can't call
-          //any synchronous interface of it.
-          "is_fast": false,
-          //number_of_connections: 1 by default, if the 'is_fast' is true, the number is the number of
-          //connections per IO thread, otherwise it is the total number of all connections.
-          "number_of_connections": 1,
-          //timeout: -1.0 by default, in seconds, the timeout for executing a command.
-          //zero or negative value means no timeout.
-          "timeout": -1.0
-      }
-  ],*/
   "app": {
     //number_of_threads: The number of IO threads, 1 by default, if the value is set to 0, the number of threads
     //is the number of CPU cores
-    "number_of_threads": 0,
+    "number_of_threads": 1,
     //enable_session: False by default
     "enable_session": false,
     "session_timeout": 0,
@@ -235,9 +137,6 @@
           "get",
           "post"
         ]
-        //                "filters": [
-        //                    "FilterClassName"
-        //                ]
       }
     ],
     //idle_connection_timeout: Defaults to 60 seconds, the lifetime
@@ -255,7 +154,7 @@
     //keepalive_requests: Set the maximum number of requests that can be served through one keep-alive connection.
     //After the maximum number of requests are made, the connection is closed.
     //The default value of 0 means no limit.
-    "keepalive_requests": 0,
+    "keepalive_requests": 10000,
     //pipelining_requests: Set the maximum number of unhandled requests that can be cached in pipelining buffer.
     //After the maximum number of requests are made, the connection is closed.
     //The default value of 0 means no limit.

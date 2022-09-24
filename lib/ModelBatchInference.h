@@ -1,7 +1,8 @@
 //
 // Created by vigi99 on 16/01/22.
 //
-
+#pragma once
+#include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -10,13 +11,12 @@
 #include <thread>
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
+#include <drogon/drogon.h>
+#include <coro/coro.hpp>
 #include "includes/json.hpp"
 #include "lib/Utilities.hpp"
 #include "lib/OnnxUtilities.h"
-#include <drogon/drogon.h>
-#include <coro/coro.hpp>
-
-#pragma once
+#include "lib/Configs.h"
 
 struct ModelResponse {
     std::string className;
@@ -34,11 +34,6 @@ struct QueueRequest {
     std::reference_wrapper<coro::event> e;
     std::reference_wrapper<const cv::Mat> image_tensor;
 };
-
-static const int MAX_WAIT_IN_MS = 2;
-static const int MAX_BATCH_SIZE = 32;
-static const int POLL_INTERVAL_MS = 1;
-static constexpr int NUM_POOL_LOOPS = MAX_WAIT_IN_MS / POLL_INTERVAL_MS;
 
 class ModelBatchInference {
 public:
