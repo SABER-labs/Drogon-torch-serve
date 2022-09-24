@@ -34,7 +34,10 @@ else()
 endif()
 message(STATUS "Using GPU: ${USE_GPU_DEVICE}")
 
-add_sanitizer("AddressLeak")
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    add_sanitizer("AddressLeak")
+endif()
+
 find_package(Drogon CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 
