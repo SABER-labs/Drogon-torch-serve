@@ -9,8 +9,9 @@ ModelBatchInference::ModelBatchInference() {
     Timer measure("ModelBatchInference constructor");
     std::ifstream class_names_path("/app/model_resources/class_names.json");
     class_idx_to_names = nlohmann::json::parse(class_names_path);
-    session = createOrtSession("/app/model_resources/resnet18-v2-7.onnx");
-    LOG_INFO << "Model loaded onto CPU";
+    env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "blazeORTLogs");
+    session = createOrtSession(env, "/app/model_resources/resnet18-v2-7.onnx");
+    LOG_INFO << "Model loaded onto device";
 }
 
 void ModelBatchInference::foreverBatchInfer() {
@@ -38,8 +39,7 @@ void ModelBatchInference::foreverBatchInfer() {
             }
 
             auto num_classes = (int) class_idx_to_names.size();
-            auto [inputTensorValues, outputTensorValues,
-                    inputDims, outputDims] = generateInputOutputTensorValuesForORT(tensor_images, num_classes);
+            auto [inputTensorValues, inputDims] = generateInputOutputTensorValuesForORT(tensor_images);
 
             Ort::AllocatorWithDefaultOptions allocator;
             char* inputName = session.GetInputName(0, allocator);
@@ -48,20 +48,16 @@ void ModelBatchInference::foreverBatchInfer() {
             std::vector<char*> outputNames{outputName};
 
             auto memoryInfo = Ort::MemoryInfo::CreateCpu(
-                    OrtAllocatorType::OrtDeviceAllocator, OrtMemType::OrtMemTypeDefault);
+                    OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
             std::vector<Ort::Value> inputTensors;
-            std::vector<Ort::Value> outputTensors;
 
             inputTensors.push_back(Ort::Value::CreateTensor<float>(
                     memoryInfo, inputTensorValues.data(), inputTensorValues.size(), inputDims.data(),
                     inputDims.size()));
-            outputTensors.push_back(Ort::Value::CreateTensor<float>(
-                    memoryInfo, outputTensorValues.data(), outputTensorValues.size(),
-                    outputDims.data(), outputDims.size()));
 
-            session.Run(Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
-                        inputTensors.size(), outputNames.data(), outputTensors.data(),
-                        outputTensors.size());
+            auto outputTensors = session.Run(Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
+                        inputTensors.size(), outputNames.data(), outputNames.size());
+            auto outputTensorValueStart = outputTensors.at(0).GetTensorData<float>();
 
             allocator.Free(inputName);
             allocator.Free(outputName);
@@ -69,8 +65,8 @@ void ModelBatchInference::foreverBatchInfer() {
             for (int64_t i = 0; i < tensors_to_process; ++i) {
                 auto response = responses[i];
                 auto e = response_events[i];
-                auto begin_idx = outputTensorValues.begin() + i * num_classes;
-                auto end_idx = outputTensorValues.begin() + (i + 1) * num_classes;
+                auto begin_idx = outputTensorValueStart + i * num_classes;
+                auto end_idx = outputTensorValueStart + (i + 1) * num_classes;
                 auto [confidence, imagenet_class] = getTopResult(begin_idx, end_idx, class_idx_to_names);
                 response.get().setValues(imagenet_class, confidence);
                 e.get().set();
@@ -83,7 +79,6 @@ void ModelBatchInference::foreverBatchInfer() {
 
 drogon::Task<ModelResponse> ModelBatchInference::infer(const cv::Mat& image_tensor) {
     // Add the image tensor to request queue
-    Timer measure("ModelBatchInference infer");
     ModelResponse model_response;
     coro::event e;
     {

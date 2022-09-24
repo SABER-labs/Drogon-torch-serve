@@ -2,10 +2,16 @@ import torch
 import torchvision
 from time import perf_counter
 import onnxruntime
+import numpy as np
+
 model_cpu = torchvision.models.resnet18(pretrained=True)
 model_cpu.eval()
 
 model_path = "model_resources/resnet18-v2-7.onnx"
+gpu_model_path = "model_resources/resnet18-v2-7-gpu.onnx"
+
+model_gpu = torchvision.models.resnet18(pretrained=True).cuda()
+model_gpu.eval()
 
 # Export the model to ONNX format
 torch.onnx.export(model_cpu,
@@ -21,12 +27,26 @@ torch.onnx.export(model_cpu,
         'output' : {0 : 'batch_size'}
     })
 
+torch.onnx.export(model_gpu,
+    torch.randn(1, 3, 224, 224).cuda(),
+    gpu_model_path,
+    export_params=True,
+    opset_version=10,
+    do_constant_folding=True,
+    input_names=['input'],
+    output_names=['output'],
+    dynamic_axes={
+        'input' : {0 : 'batch_size'},
+        'output' : {0 : 'batch_size'}
+    })
+
 sess_options = onnxruntime.SessionOptions()
 sess_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 sess_options.intra_op_num_threads = 5
 sess_options.enable_cpu_mem_arena = False
-# sess_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
-ort_session = onnxruntime.InferenceSession(model_path, sess_options)
+
+ort_session = onnxruntime.InferenceSession(model_path, sess_options, providers=['CPUExecutionProvider'])
+ort_session_gpu = onnxruntime.InferenceSession(gpu_model_path, sess_options, providers=['CUDAExecutionProvider'])
 
 
 batched_example = torch.randn(32, 3, 224, 224)
@@ -53,4 +73,17 @@ print(f"ONNX CPU inference time for {1} batch_size in batched_mode was : {ort_ti
 start = perf_counter()
 ort_session.run(None, {'input': single_example.detach().numpy()})
 print(f"ONNX CPU inference time for {single_example.size(0)} batch_size was : {(perf_counter() - start) * 1000:.2f}ms")
+print(f"ONNX is faster than Pytorch model by: {(1 - (ort_time_taken/py_time_taken)) * 100:.2f}%")
+
+ort_inputs = {'input': batched_example.detach().numpy()}
+for i in range(4):
+    ort_outs = ort_session_gpu.run(None, ort_inputs)
+start = perf_counter()
+ort_outs = ort_session_gpu.run(None, ort_inputs)
+ort_time_taken = perf_counter() - start
+print(f"ONNX GPU inference time for {batched_example.size(0)} batch_size was : {ort_time_taken * 1000:.2f}ms")
+print(f"ONNX GPU inference time for {1} batch_size in batched_mode was : {ort_time_taken * 1000 / batched_example.size(0):.2f}ms")
+start = perf_counter()
+ort_session_gpu.run(None, {'input': single_example.detach().numpy()})
+print(f"ONNX GPU inference time for {single_example.size(0)} batch_size was : {(perf_counter() - start) * 1000:.2f}ms")
 print(f"ONNX is faster than Pytorch model by: {(1 - (ort_time_taken/py_time_taken)) * 100:.2f}%")

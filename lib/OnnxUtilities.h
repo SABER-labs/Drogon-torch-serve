@@ -13,12 +13,13 @@
 
 int64_t vectorProduct(const std::vector<int64_t>&);
 
-std::tuple<float, std::string> getTopResult(std::vector<float>::iterator, std::vector<float>::iterator, const nlohmann::json&);
+std::tuple<float, std::string> getTopResult(const float*, const float*, const nlohmann::json&);
 
-Ort::Session createOrtSession(const std::string&);
+Ort::Session createOrtSession(Ort::Env&, const std::string&);
 
-std::tuple<std::vector<float>, std::vector<float>, std::vector<int64_t>, std::vector<int64_t>> generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const cv::Mat>>&, int64_t);
+std::tuple<std::vector<float>, std::vector<int64_t>> generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const cv::Mat>>&);
 
 cv::Mat processImage(std::reference_wrapper<const cv::Mat>);
 
 uint getNumInferenceEngineThreads();
+

@@ -8,7 +8,7 @@ int64_t vectorProduct(const std::vector<int64_t> &v) {
     return std::accumulate(v.begin(), v.end(), 1, std::multiplies<>());
 }
 
-std::tuple<float, std::string> getTopResult(std::vector<float>::iterator begin, std::vector<float>::iterator end,
+std::tuple<float, std::string> getTopResult(const float *begin, const float *end,
                                             const nlohmann::json &class_idx_to_names) {
     auto max = std::max_element(begin, end);
     auto max_idx = std::distance(begin, max);
@@ -16,23 +16,34 @@ std::tuple<float, std::string> getTopResult(std::vector<float>::iterator begin, 
     return std::make_tuple(confidence, class_idx_to_names[std::to_string(max_idx)]);
 }
 
-Ort::Session createOrtSession(const std::string &model_path) {
-    Ort::Env env(ORT_LOGGING_LEVEL_ERROR, "test");
+Ort::Session createOrtSession(Ort::Env &env, const std::string &model_path) {
     Ort::SessionOptions session_options;
-    session_options.AddConfigEntry("session.set_denormal_as_zero", "1");
-    session_options.DisableCpuMemArena();
+    int num_threads;
 
-    auto num_threads = (int) std::max(1u, std::thread::hardware_concurrency() / getNumInferenceEngineThreads());
+    #if USE_GPU == 0
+        LOG_INFO << "GPU is not available, using CPU execution provider";
+        session_options.AddConfigEntry("session.set_denormal_as_zero", "1");
+        session_options.DisableCpuMemArena();
+        num_threads = (int) std::max(1u, std::thread::hardware_concurrency() / getNumInferenceEngineThreads());
+    #elif USE_GPU == 1
+        LOG_INFO << "GPU is available, using CUDA execution provider";
+        OrtCUDAProviderOptions cudaOption;
+        session_options.AppendExecutionProvider_CUDA(cudaOption);
+        num_threads = 1;
+    #endif
+
     session_options.SetIntraOpNumThreads(num_threads);
-
     LOG_INFO << "Setting intra_op threads to " << num_threads << " .";
+
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     Ort::Session session(env, model_path.c_str(), session_options);
+    LOG_INFO << "Loaded model from " << model_path;
+
     return session;
 }
 
-std::tuple<std::vector<float>, std::vector<float>, std::vector<int64_t>, std::vector<int64_t>>
-generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const cv::Mat>> &images, int64_t num_classes) {
+std::tuple<std::vector<float>, std::vector<int64_t>>
+generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const cv::Mat>> &images) {
     auto batch_size = (int) images.size();
 
     std::vector<cv::Mat> processed_images;
@@ -43,19 +54,15 @@ generateInputOutputTensorValuesForORT(std::vector<std::reference_wrapper<const c
 
     auto input_tensor_size = processed_images[0].size;
     std::vector<int64_t> inputDims = {batch_size, input_tensor_size[1], input_tensor_size[2], input_tensor_size[3]};
-    std::vector<int64_t> outputDims = {batch_size, num_classes};
-    size_t outputTensorSize = vectorProduct(outputDims);
 
     std::vector<float> inputTensorValues;
-    std::vector<float> outputTensorValues(outputTensorSize);
     std::vector<Ort::Value> inputTensors;
-    std::vector<Ort::Value> outputTensors;
 
     for (auto &image: processed_images) {
         std::copy(image.begin<float>(), image.end<float>(), std::back_inserter(inputTensorValues));
     }
 
-    return std::make_tuple(inputTensorValues, outputTensorValues, inputDims, outputDims);
+    return std::make_tuple(inputTensorValues, inputDims);
 }
 
 cv::Mat processImage(std::reference_wrapper<const cv::Mat> image) {
