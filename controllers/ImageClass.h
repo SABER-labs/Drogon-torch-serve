@@ -4,9 +4,9 @@
 #include <drogon/HttpController.h>
 #include <filesystem>
 #include <opencv2/opencv.hpp>
-#include "lib/ModelBatchInference.h"
-#include "lib/OnnxUtilities.h"
 #include <thread>
+#include "lib/ModelBatchInference.h"
+#include "lib/Configs.h"
 
 using namespace drogon;
 

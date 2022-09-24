@@ -24,7 +24,7 @@ Ort::Session createOrtSession(Ort::Env &env, const std::string &model_path) {
         LOG_INFO << "GPU is not available, using CPU execution provider";
         session_options.AddConfigEntry("session.set_denormal_as_zero", "1");
         session_options.DisableCpuMemArena();
-        num_threads = (int) std::max(1u, std::thread::hardware_concurrency() / getNumInferenceEngineThreads());
+        num_threads = Configs::MODEL_THREADS_PER_SESSION;
     #elif USE_GPU == 1
         LOG_INFO << "GPU is available, using CUDA execution provider";
         OrtCUDAProviderOptions cudaOption;
@@ -84,8 +84,3 @@ cv::Mat processImage(std::reference_wrapper<const cv::Mat> image) {
     return preprocessedImage;
 }
 
-uint getNumInferenceEngineThreads() {
-    char * val = getenv( "NUM_INFERENCE_ENGINES" );
-    uint num_inference_engines = val == nullptr ? (std::thread::hardware_concurrency() / 5) : std::stoi(val);
-    return num_inference_engines;
-}

@@ -2,7 +2,6 @@
 // Created by vigi99 on 16/01/22.
 //
 
-#include <fstream>
 #include "ModelBatchInference.h"
 
 ModelBatchInference::ModelBatchInference() {
@@ -16,16 +15,16 @@ ModelBatchInference::ModelBatchInference() {
 
 void ModelBatchInference::foreverBatchInfer() {
     for (;;) {
-        for (size_t i = 0; i < NUM_POOL_LOOPS; ++i) {
-            if (request_queue.size() < MAX_BATCH_SIZE) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(POLL_INTERVAL_MS));
+        for (int i = 0; i < Configs::NUM_POOL_LOOPS; ++i) {
+            if ((int) request_queue.size() < Configs::MAX_BATCH_SIZE) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(Configs::POLL_INTERVAL_MS));
             } else {
                 break;
             }
         }
 
         if (!request_queue.empty()) {
-            int tensors_to_process = std::min((int) request_queue.size(), MAX_BATCH_SIZE);
+            int tensors_to_process = std::min((int) request_queue.size(), Configs::MAX_BATCH_SIZE);
             std::vector<std::reference_wrapper<const cv::Mat>> tensor_images;
             std::vector<std::reference_wrapper<coro::event>> response_events;
             std::vector<std::reference_wrapper<ModelResponse>> responses;
