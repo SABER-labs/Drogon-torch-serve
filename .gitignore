@@ -567,7 +567,6 @@ opencv_install_directory/
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,visualstudio,visualstudiocode,cmake,c,c++
 build/
-.devcontainer/
 check_io.py
 debug.sh
 valgrind.log*
